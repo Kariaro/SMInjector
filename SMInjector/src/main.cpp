@@ -9,6 +9,8 @@ int main(int argc, char** argv) {
 	printf("SMInjector: startup\n");
 	DWORD pid = find_game_pid();
 
+	// TODO: https://stackoverflow.com/questions/875249/how-to-get-current-directory
+
 	if(!inject(pid, "C:\\Users\\Admin\\source\\repos\\SMInjectorProject\\SMInjector\\x64\\Release\\SMInjectorDll.dll")) {
 		printf("SMInjector: failed to inject dll file\n");
 		return 0;
@@ -17,15 +19,6 @@ int main(int argc, char** argv) {
 	printf("SMInjector: sucessfully injected dll file\n");
 	return 0;
 }
-
-/*
-DWORD find_game_pid() {
-	HWND hWnd = FindWindowA(0, "Scrap Mechanic");
-	DWORD pid;
-	GetWindowThreadProcessId(hWnd, &pid);
-	return pid;
-}
-*/
 
 DWORD find_game_pid() {
 	const wchar_t* procName = L"ScrapMechanic.exe";

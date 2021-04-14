@@ -10,7 +10,11 @@ Hook::~Hook() {
 	length = 0;
 }
 
-bool Hook::Inject(const char *module_name, const char *proc_name, void *src, int len) {
+bool Hook::InjectFromName(const char *module_name, const char *proc_name, void *src, int len) {
+	return Hook::InjectFromName(module_name, proc_name, src, 0, len);
+}
+
+bool Hook::InjectFromName(const char *module_name, const char *proc_name, void *src, int offset, int len) {
 	HMODULE hModule = GetModuleHandleA(module_name);
 	if(!hModule) {
 		printf("The module '%s' was not found\n", module_name);
@@ -23,16 +27,20 @@ bool Hook::Inject(const char *module_name, const char *proc_name, void *src, int
 		return false;
 	}
 	
-	return Inject(dst, src, len);
+	return Inject(dst, src, offset, len);
 }
 
 bool Hook::Inject(void *dst, void *src, int len) {
+	return Hook::Inject(dst, src, 0, len);
+}
+
+bool Hook::Inject(void *dst, void *src, int off, int len) {
 	if(gate) {
 		printf("Already injected!\n");
 		return false;
 	}
-	
-	if(len < 14) return false;
+
+	if(len < 6) return false;
 	
 	// Construct the gate
 	gate = (BYTE*)VirtualAlloc(NULL, (size_t)len + 14, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
@@ -41,9 +49,7 @@ bool Hook::Inject(void *dst, void *src, int len) {
 		return false;
 	}
 	
-#ifdef _DEBUG
 	printf("1: dst=%p\n2: src=%p\n3: gate=%p\n", dst, src, gate);
-#endif
 
 	memcpy(gate, dst, len); // Save the first bytes
 	*(longlong*)((longlong)gate + len) = 0x25FF; // Add far jump
@@ -51,20 +57,22 @@ bool Hook::Inject(void *dst, void *src, int len) {
 	
 	DWORD oldProtection;
 	// Update the protection for the gate memory
-	VirtualProtect(gate, (size_t)len + 14, PAGE_EXECUTE_READ, &oldProtection);
+	VirtualProtect(gate, (size_t)len + 6, PAGE_EXECUTE_READ, &oldProtection);
 	
 	// Allow modifications of the target function
 	VirtualProtect(dst, (size_t)len, PAGE_EXECUTE_READWRITE, &oldProtection);
 	memset(dst, 0x90, len); // Fill the replaced region with NOP
 
 	// Modify the target function
-	*(longlong*)((longlong)dst) = 0x25FF; // Add far jump
-	*(longlong*)((longlong)dst + 6) = (longlong)src;
+	*(short*)((longlong)dst) = 0x25FF; // Add far jump
+	*(int*)((longlong)dst + 2) = off; // Set pointer offset position
+	*(longlong*)((longlong)dst + 6 + off) = (longlong)src;
 	
 	DWORD temp;
 	VirtualProtect(dst, (size_t)len, oldProtection, &temp);
 	
 	// Save references to the our parameters
+	offset = off;
 	length = len;
 	func = dst;
 	
