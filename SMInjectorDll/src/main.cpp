@@ -5,19 +5,31 @@
 #include <stdio.h>
 
 #include "hook.h"
+#include "fmod.h"
 #include "lua.h"
 
 BOOL InjectLua();
+BOOL InjectFMOD();
 
 FILE* console_handle;
+HookUtility* util;
 
 BOOL Startup(HMODULE hModule) {
     freopen_s(&console_handle, "CONOUT$", "w", stdout);
     
+    util = new HookUtility();
     InjectLua();
-    
+    /*if(!InjectFMOD()) {
+        printf("Failed to execute [InjectFMOD]\n");
+    }*/
+
     MessageBox(0, L"From DLL\n", L"Pausing exit", MB_ICONINFORMATION);
-    if(true) return true;
+    // if(true) return true;
+
+    util->Unload();
+    MessageBox(0, L"From DLL\n", L"[UNLOADING UTILS]", MB_ICONINFORMATION);
+    delete util;
+
     if(console_handle) {
         fclose(console_handle);
     }
@@ -47,68 +59,91 @@ BOOL WINAPI DllMain(HMODULE hModule, DWORD fdwReason, LPVOID lpReserved) {
     return TRUE;
 }
 
-// LUAL_REGISTER
-typedef void (*pluaL_register)(lua_State*, const char*, const luaL_Reg*);
-Hook hck_luaL_register;
-
-void hook_luaL_register(lua_State *L, const char *libname, const luaL_Reg *l) {
-	printf("hook_luaL_register: libname=[%s]\n", libname);
-	
-	return ((pluaL_register)hck_luaL_register.Gate())(L, libname, l);
-}
-
-// LUAL_LOADSTRING
-typedef int (*pluaL_loadstring)(lua_State*, const char*);
-Hook hck_luaL_loadstring;
-
-int hook_luaL_loadstring(lua_State *L, const char *s) {
-	printf("hook_luaL_loadstring: s=[%s]\n", s);
-	
-	return ((pluaL_loadstring)hck_luaL_loadstring.Gate())(L, s);
-}
-
-// LUA_NEWSTATE
-typedef lua_State *(*plua_newstate)(lua_Alloc, void*);
-Hook hck_lua_newstate;
-
-lua_State *hook_lua_newstate(lua_Alloc f, void* ud) {
-	printf("hck_lua_newstate: ud=[%p]\n", ud);
-	
-	return ((plua_newstate)hck_lua_newstate.Gate())(f, ud);
-}
-
-// LUAL_LOADBUFFER
-typedef int (*pluaL_loadbuffer)(lua_State*, const char*, size_t, const char*);
-Hook hck_luaL_loadbuffer;
-
-int hook_luaL_loadbuffer(lua_State *L, const char *buff, size_t sz, const char *name) {
-	printf("hck_luaL_loadbuffer: buff=[%s], sz=[%zu], name=[%s]\n", buff, sz, name);
-	
-	return ((pluaL_loadbuffer)hck_luaL_loadbuffer.Gate())(L, buff, sz, name);
-}
-
+#include "hooks.h"
 
 BOOL InjectLua() {
     printf("Trying to inject the detour\n");
 
-    if(!hck_luaL_register.InjectFromName("lua51.dll", "luaL_register", &hook_luaL_register, 15)) {
+    hck_luaL_register = util->InjectFromName("lua51.dll", "luaL_register", &hooks::hook_luaL_register, 15);
+    hck_luaL_loadstring = util->InjectFromName("lua51.dll", "luaL_loadstring", &hooks::hook_luaL_loadstring, 16);
+    hck_lua_newstate = util->InjectFromName("lua51.dll", "lua_newstate", &hooks::hook_lua_newstate, -14, 6);
+    hck_luaL_loadbuffer = util->InjectFromName("lua51.dll", "luaL_loadbuffer", &hooks::hook_luaL_loadbuffer, 17, 13);
+
+    if(!hck_luaL_register) {
         printf("Failed to inject 'luaL_register'\n");
         return false;
     }
 
-    if(!hck_luaL_loadstring.InjectFromName("lua51.dll", "luaL_loadstring", &hook_luaL_loadstring, 16)) {
+    if(!hck_luaL_loadstring) {
         printf("Failed to inject 'luaL_loadstring'\n");
         return false;
     }
 
-    if(!hck_lua_newstate.InjectFromName("lua51.dll", "lua_newstate", &hook_lua_newstate, -14, 6)) {
+    if(!hck_lua_newstate) {
         printf("Failed to inject 'lua_newstate'\n");
         return false;
     }
 
-    if(!hck_luaL_loadbuffer.InjectFromName("lua51.dll", "luaL_loadbuffer", &hook_luaL_loadbuffer, 17, 13)) {
+    if(!hck_luaL_loadbuffer) {
         printf("Failed to inject 'luaL_loadbuffer'\n");
         return false;
+    }
+
+    return true;
+}
+
+typedef FMOD_RESULT (*pFMOD_System_CreateSound)(void *_this, const char *name_or_data, int mode, void *exinfo, void **sound);
+pFMOD_System_CreateSound FMOD_System_CreateSound;
+
+typedef FMOD_RESULT (*pFMOD_System_PlaySound)(void *_this, void *sound, void *channelgroup, bool paused, void **channel);
+pFMOD_System_PlaySound FMOD_System_PlaySound;
+
+BOOL InjectFMOD() {
+    printf("Trying to access FMOD functions\n");
+
+    void* system_0 = NULL;
+    void* system_1 = NULL;
+
+    try {
+        HMODULE hModule = GetModuleHandleA("ScrapMechanic.exe");
+        if(!hModule) return false;
+        
+        longlong p0 = *(longlong*)((longlong)hModule + 0xE55C40);
+        longlong p1 = *(longlong*)(p0 + 0x2C8);
+        longlong p2 = *(longlong*)(p1 + 0x70);
+        system_1 = (void*)p2;
+        
+        printf("SM: p1 -> [%p]\n", (void*)p1);
+    } catch(...) {
+        printf("Failed to execute pointer code\n");
+    }
+
+    printf("Read FMOD system pointers: [%p] [%p]\n", system_0, system_1);
+
+    try {
+        HMODULE hModule = GetModuleHandleA("fmod.dll");
+        if(!hModule) return false;
+
+        const char *path = "C:\\Users\\Admin\\source\\repos\\SMInjectorProject\\SMInjector\\x64\\Release\\spooky.mp3";
+        printf("FMOD: path='%s'\n", path);
+
+        FMOD_System_CreateSound = (pFMOD_System_CreateSound)GetProcAddress(hModule, "FMOD_System_CreateSound");
+        printf("FMOD: FMOD_System_CreateSound -> [%p]\n", FMOD_System_CreateSound);
+        FMOD_System_PlaySound = (pFMOD_System_PlaySound)GetProcAddress(hModule, "FMOD_System_PlaySound");
+        printf("FMOD: FMOD_System_PlaySound -> [%p]\n", FMOD_System_PlaySound);
+
+        void *sound = NULL;
+        FMOD_RESULT result = FMOD_System_CreateSound(system_1, path, FMOD_DEFAULT, NULL, &sound);
+        printf("FMOD: sound=[%p], result=[%d]\n", sound, result);
+
+        if(result == 0) { // FMOD_OK
+            void *channel = NULL;
+            FMOD_RESULT result_2 = FMOD_System_PlaySound(system_1, sound, NULL, false, &channel);
+            printf("FMOD: channel=[%p], result_2=[%d]\n", channel, result_2);
+
+        }
+    } catch(...) {
+        printf("Failed to get proc\n");
     }
 
     return true;

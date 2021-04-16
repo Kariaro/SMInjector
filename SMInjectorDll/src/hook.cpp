@@ -8,6 +8,7 @@ Hook::~Hook() {
 	gate = NULL;
 	func = NULL;
 	length = 0;
+	offset = 0;
 }
 
 bool Hook::InjectFromName(const char *module_name, const char *proc_name, void *src, int len) {
@@ -49,7 +50,7 @@ bool Hook::Inject(void *dst, void *src, int off, int len) {
 		return false;
 	}
 	
-	printf("1: dst=%p\n2: src=%p\n3: gate=%p\n", dst, src, gate);
+	// printf("1: dst=%p\n2: src=%p\n3: gate=%p\n", dst, src, gate);
 
 	memcpy(gate, dst, len); // Save the first bytes
 	*(longlong*)((longlong)gate + len) = 0x25FF; // Add far jump
@@ -65,7 +66,7 @@ bool Hook::Inject(void *dst, void *src, int off, int len) {
 
 	// Modify the target function
 	*(short*)((longlong)dst) = 0x25FF; // Add far jump
-	*(int*)((longlong)dst + 2) = off; // Set pointer offset position
+	*(int*)((longlong)dst + 2) = off;  // Set pointer offset position
 	*(longlong*)((longlong)dst + 6 + off) = (longlong)src;
 	
 	DWORD temp;

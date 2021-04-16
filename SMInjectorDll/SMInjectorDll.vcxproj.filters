@@ -29,5 +29,11 @@
     <ClInclude Include="src\lua.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\fmod.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hooks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
