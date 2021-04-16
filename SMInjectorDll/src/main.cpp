@@ -8,26 +8,22 @@
 #include "fmod.h"
 #include "lua.h"
 
+BOOL PostConsoleInjections();
 BOOL InjectLua();
 BOOL InjectFMOD();
 
 FILE* console_handle;
 HookUtility* util;
 
-BOOL Startup(HMODULE hModule) {
-    freopen_s(&console_handle, "CONOUT$", "w", stdout);
-    
-    util = new HookUtility();
-    InjectLua();
-    /*if(!InjectFMOD()) {
-        printf("Failed to execute [InjectFMOD]\n");
-    }*/
+#include "hooks.h"
 
-    MessageBox(0, L"From DLL\n", L"Pausing exit", MB_ICONINFORMATION);
-    // if(true) return true;
+BOOL Startup(HMODULE hModule) {
+    hck_init_console = new Hook();
+    hck_init_console->Inject((void*)((longlong)GetModuleHandleA("ScrapMechanic.exe") + 0x1b5090), &hooks::hook_init_console, 15);
+
+    MessageBox(0, L"[Press OK to uninject]\n", L"[Pausing]", MB_ICONINFORMATION);
 
     util->Unload();
-    MessageBox(0, L"From DLL\n", L"[UNLOADING UTILS]", MB_ICONINFORMATION);
     delete util;
 
     if(console_handle) {
@@ -35,6 +31,21 @@ BOOL Startup(HMODULE hModule) {
     }
 
     FreeLibraryAndExitThread(hModule, 0);
+    return true;
+}
+
+BOOL PostConsoleInjections() {
+    freopen_s(&console_handle, "CONOUT$", "w", stdout);
+    printf("[INJECTING THE HANDLER]\n");
+    util = new HookUtility();
+
+    InjectLua();
+    /*
+    if(!InjectFMOD()) {
+        printf("Failed to execute [InjectFMOD]\n");
+    }
+    */
+
     return true;
 }
 
@@ -46,7 +57,6 @@ BOOL WINAPI DllMain(HMODULE hModule, DWORD fdwReason, LPVOID lpReserved) {
             break;
 
         case DLL_PROCESS_DETACH:
-            MessageBox(0, L"[DLL_PROCESS_DETACH]\n", L"Pausing exit", MB_ICONINFORMATION);
             break;
 
         case DLL_THREAD_ATTACH:
@@ -59,8 +69,6 @@ BOOL WINAPI DllMain(HMODULE hModule, DWORD fdwReason, LPVOID lpReserved) {
     return TRUE;
 }
 
-#include "hooks.h"
-
 BOOL InjectLua() {
     printf("Trying to inject the detour\n");
 
@@ -68,7 +76,7 @@ BOOL InjectLua() {
     hck_luaL_loadstring = util->InjectFromName("lua51.dll", "luaL_loadstring", &hooks::hook_luaL_loadstring, 16);
     hck_lua_newstate = util->InjectFromName("lua51.dll", "lua_newstate", &hooks::hook_lua_newstate, -14, 6);
     hck_luaL_loadbuffer = util->InjectFromName("lua51.dll", "luaL_loadbuffer", &hooks::hook_luaL_loadbuffer, 17, 13);
-
+    
     if(!hck_luaL_register) {
         printf("Failed to inject 'luaL_register'\n");
         return false;

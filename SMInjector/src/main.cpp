@@ -1,22 +1,95 @@
 #include <iostream>
 #include <windows.h>
 #include <tlhelp32.h>
+#include "find_steam.h"
 
-bool inject(DWORD, const char* path);
+bool inject(DWORD, const char*);
 DWORD find_game_pid();
+
+std::string get_dll_path() {
+    CHAR buffer[MAX_PATH] = { 0 };
+    GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    std::string::size_type pos = std::string(buffer).find_last_of("\\/");
+	return std::string(buffer).substr(0, pos).append("\\SMInjectorDll.dll");
+}
+
+DWORD startup(std::string in_exe, std::string in_dir, std::string in_cmd, HANDLE &hProcess, HANDLE &hThread) {
+	STARTUPINFOA si;
+	PROCESS_INFORMATION pi;
+
+	CHAR exe[MAX_PATH + 1] = { 0 };
+	CHAR dir[MAX_PATH + 1] = { 0 };
+	CHAR cmd[4097] = { 0 };
+	ZeroMemory(cmd, 4097);
+
+	memcpy(exe, in_exe.c_str(), min(in_exe.size(), MAX_PATH + 1));
+	memcpy(dir, in_dir.c_str(), min(in_dir.size(), MAX_PATH + 1));
+	sprintf_s(cmd, 4097, "\"%s\" %s", exe, in_cmd.c_str());
+	printf("EXE: [%s]\n", exe);
+	printf("DIR: [%s]\n", dir);
+	printf("CMD: [%s]\n", cmd);
+
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	ZeroMemory(&pi, sizeof(pi));
+	si.wShowWindow = true;
+
+	// start the program up
+	if(!CreateProcessA(
+		exe,
+		cmd,
+		NULL, NULL,
+		FALSE,
+		CREATE_SUSPENDED,
+		NULL,
+		dir,
+		&si,
+		&pi
+	)) {
+		printf("Error: [%d]\n", GetLastError());
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+		return GetLastError();
+	}
+
+	hProcess = pi.hProcess;
+	hThread = pi.hThread;
+	
+	return 0;
+}
 
 int main(int argc, char** argv) {
 	printf("SMInjector: startup\n");
-	DWORD pid = find_game_pid();
 
-	// TODO: https://stackoverflow.com/questions/875249/how-to-get-current-directory
+	std::string dll_path = get_dll_path();
+	std::string result = SteamFinder::FindGame("Scrap Mechanic");
+	printf("DLL : [%s]\n", dll_path.c_str());
+	printf("GAME: [%s]\n", result.c_str());
 
-	if(!inject(pid, "C:\\Users\\Admin\\source\\repos\\SMInjectorProject\\SMInjector\\x64\\Release\\SMInjectorDll.dll")) {
-		printf("SMInjector: failed to inject dll file\n");
+	if(result.empty()) {
+		printf("SMInjector: Failed to find the game \"ScrapMechanic\"\n");
 		return 0;
 	}
+	
+	HANDLE hProcess;
+	HANDLE hThread;
+	std::string exe_exe = std::string(result).append("\\Release\\ScrapMechanic.exe");
+	std::string exe_dir = std::string(result).append("\\Release");
+	if(startup(exe_exe, exe_dir, "-dev", hProcess, hThread) == ERROR_SUCCESS) {
+		printf("hProcess: [%p]\n", hProcess);
+		printf("hThread : [%p]\n", hThread);
+		
+		DWORD pid = find_game_pid();
+		printf("PID : [%d]\n", pid);
+		
+		if(!inject(pid, dll_path.c_str())) {
+			printf("SMInjector: failed to inject dll file\n");
+			return 0;
+		}
 
-	printf("SMInjector: sucessfully injected dll file\n");
+		ResumeThread(hThread);
+	}
+
 	return 0;
 }
 
