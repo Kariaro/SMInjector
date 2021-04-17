@@ -38,6 +38,7 @@ namespace Console {
 	void log_close() {
 		if(console_handle) {
 			fclose(console_handle);
+			console_handle = NULL;
 		}
 	}
 
@@ -55,7 +56,9 @@ namespace Console {
 
 		va_list args;
 		va_start(args, format);
+		
 		vprintf(format, args);
+		printf("\n");
 	}
 #endif
 }

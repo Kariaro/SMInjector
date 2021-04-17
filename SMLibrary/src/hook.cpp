@@ -62,6 +62,10 @@ bool Hook::Inject(void *dst, void *src, int off, int len) {
 	
 	// Allow modifications of the target function
 	VirtualProtect(dst, (size_t)len, PAGE_EXECUTE_READWRITE, &oldProtection);
+	
+	// Keep the old value where the pointer was placed
+	last_pointer = *(longlong*)((longlong)dst + 6 + off);
+
 	memset(dst, 0x90, len); // Fill the replaced region with NOP
 
 	// Modify the target function
@@ -96,6 +100,8 @@ bool Hook::Uninject() {
 	// Free the gate
 	VirtualFree(gate, 0, MEM_RELEASE);
 	
+	*(longlong*)((longlong)func + 6 + offset) = last_pointer;
+
 	DWORD temp;
 	// Change back the protation of the remote function
 	VirtualProtect(func, length, oldProtection, &temp);
@@ -103,7 +109,9 @@ bool Hook::Uninject() {
 	// Reset values
 	gate = NULL;
 	func = NULL;
+	last_pointer = 0;
 	length = 0;
+	offset = 0;
 	
 	return true;
 }

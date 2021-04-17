@@ -7,6 +7,13 @@
 
 bool inject(DWORD, const char*);
 
+std::string get_dir_path() {
+	CHAR buffer[MAX_PATH] = { 0 };
+    GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    std::string::size_type pos = std::string(buffer).find_last_of("\\/");
+	return std::string(buffer).substr(0, pos);
+}
+
 std::string get_dll_path() {
     CHAR buffer[MAX_PATH] = { 0 };
     GetModuleFileNameA(NULL, buffer, MAX_PATH);
@@ -78,14 +85,17 @@ int main(int argc, char** argv) {
 	std::string exe_exe = std::string(game_path).append("\\Release\\ScrapMechanic.exe");
 	std::string exe_dir = std::string(game_path).append("\\Release");
 	if(startup(exe_exe, exe_dir, "-dev", hProcess, hThread) == ERROR_SUCCESS) {
-		printf("hProcess: [%p]\n", hProcess);
-		printf("hThread : [%p]\n", hThread);
-		
 		DWORD pid = GetProcessId(hProcess);
 		printf("PID : [%d]\n", pid);
 		
 		if(!inject(pid, dll_path.c_str())) {
 			printf("SMInjector: failed to inject dll file\n");
+			return 0;
+		}
+
+		std::string dll_plugin = get_dir_path().append("\\SMPlugin.dll");
+		if(!inject(pid, dll_plugin.c_str())) {
+			printf("SMInjector: failed to inject PLUGIN dll file\n");
 			return 0;
 		}
 

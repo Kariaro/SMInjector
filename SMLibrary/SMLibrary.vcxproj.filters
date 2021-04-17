@@ -35,9 +35,6 @@
     <ClInclude Include="include\lua.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\plugin.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\sm_lib.h">
       <Filter>Header Files</Filter>
     </ClInclude>

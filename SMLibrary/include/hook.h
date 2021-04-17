@@ -18,6 +18,7 @@ class _LIB_CLASS Hook {
 	private:
 		BYTE *gate = NULL;
 		void *func = NULL;
+		longlong last_pointer = 0;
 		int length = 0;
 		int offset = 0;
 	public:

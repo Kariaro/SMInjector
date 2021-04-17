@@ -154,7 +154,6 @@
     <ClInclude Include="include\fmod.h" />
     <ClInclude Include="include\hook.h" />
     <ClInclude Include="include\lua.h" />
-    <ClInclude Include="include\plugin.h" />
     <ClInclude Include="include\sm_lib.h" />
     <ClInclude Include="include\stdafx.h" />
     <ClInclude Include="src\hooks.h" />
