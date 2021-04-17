@@ -22,8 +22,9 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{81368e09-9fa2-4f28-9915-22fe758bfd48}</ProjectGuid>
-    <RootNamespace>SMInjectorDll</RootNamespace>
+    <RootNamespace>SMLibrary</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>SMLibrary</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -72,15 +73,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -142,13 +147,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\hook.cpp" />
-    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\sm_lib.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\fmod.h" />
-    <ClInclude Include="src\hook.h" />
+    <ClInclude Include="include\console.h" />
+    <ClInclude Include="include\fmod.h" />
+    <ClInclude Include="include\hook.h" />
+    <ClInclude Include="include\lua.h" />
+    <ClInclude Include="include\plugin.h" />
+    <ClInclude Include="include\sm_lib.h" />
+    <ClInclude Include="include\stdafx.h" />
     <ClInclude Include="src\hooks.h" />
-    <ClInclude Include="src\lua.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

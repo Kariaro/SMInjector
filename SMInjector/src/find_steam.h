@@ -13,7 +13,7 @@ namespace SteamFinder {
     using std::vector;
     using std::filesystem::directory_iterator;
 
-    LONG GetStringRegKey(HKEY hKey, const char* key_name, string& strValue) {
+    LONG get_registry_string(HKEY hKey, const char* key_name, string& strValue) {
         CHAR szBuffer[512] = { 0 };
         DWORD dwBufferSize = sizeof(szBuffer);
         ULONG nError = RegQueryValueExA(hKey, key_name, 0, NULL, (LPBYTE)szBuffer, &dwBufferSize);
@@ -25,16 +25,17 @@ namespace SteamFinder {
         HKEY hKey;
         LONG lRes = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\WOW6432Node\\Valve\\Steam", 0, KEY_READ, &hKey);
         string install_path;
-        GetStringRegKey(hKey, "InstallPath", install_path);
-
+        get_registry_string(hKey, "InstallPath", install_path);
         RegCloseKey(hKey);
         return install_path;
     }
 
+    /*
     inline bool does_file_exist(const string& name) {
         struct stat buffer;
         return (stat(name.c_str(), &buffer) == 0);
     }
+    */
 
     vector<string> get_steam_libraries(string install_path, string vdf_file) {
         vector<string> vec;

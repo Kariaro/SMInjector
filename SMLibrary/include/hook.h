@@ -1,6 +1,4 @@
 #include <windows.h>
-#include <stdio.h>
-
 
 #include <string>
 using std::string;
@@ -8,13 +6,15 @@ using std::string;
 #include <map>
 using std::map;
 
+#include "stdafx.h"
+
 #ifndef __HOOK_H__
 #define __HOOK_H__
 
 typedef unsigned char BYTE;
 typedef long long longlong;
 
-class Hook {
+class _LIB_CLASS Hook {
 	private:
 		BYTE *gate = NULL;
 		void *func = NULL;
@@ -48,7 +48,7 @@ class HookUtility {
 
 				auto it2 = map.find(proc_name);
 				if(it2 != map.end()) {
-					printf("This element already exists! module=[%s], proc=[%s]\n", module_name, proc_name);
+					//printf("This element already exists! module=[%s], proc=[%s]\n", module_name, proc_name);
 					return NULL;
 				}
 
@@ -62,7 +62,7 @@ class HookUtility {
 
 				auto it2 = map.find(proc_name);
 				if(it2 != map.end()) {
-					printf("This element already exists! module=[%s], proc=[%s]\n", module_name, proc_name);
+					//printf("This element already exists! module=[%s], proc=[%s]\n", module_name, proc_name);
 					return NULL;
 				}
 

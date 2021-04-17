@@ -1,4 +1,4 @@
-#include "hook.h"
+#include "../include/hook.h"
 
 Hook::~Hook() {
 	if(gate) {
