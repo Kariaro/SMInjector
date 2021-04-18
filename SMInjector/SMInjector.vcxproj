@@ -148,6 +148,7 @@
   <ItemGroup>
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\find_steam.h" />
+    <ClInclude Include="src\manual_map.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SMInjector.rc" />

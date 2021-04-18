@@ -35,16 +35,15 @@ HookUtility *util;
 #include "hooks.h"
 
 BOOL Startup(HMODULE hModule) {
+	// This hooks is not going to be unloaded
+
 	hck_init_console = new Hook();
 	hck_init_console->Inject((void*)((longlong)GetModuleHandleA("ScrapMechanic.exe") + 0x1b5090), &Hooks::hook_init_console, 15);
 
-	MessageBox(0, L"[Press OK to uninject]\n", L"[Pausing]", MB_ICONINFORMATION);
-
-	util->Unload();
+	// MessageBox(0, L"[Press OK to uninject]\n", L"[Pausing]", MB_ICONINFORMATION);
+	// util->Unload();
 	//delete util;
-
 	//Console::log_close();
-
 	//FreeLibraryAndExitThread(hModule, 0);
 	return true;
 }

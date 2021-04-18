@@ -1,5 +1,3 @@
-// Microsoft Visual C++ generated resource script.
-//
 #include "resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
@@ -13,13 +11,14 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Swedish (Sweden) resources
+// English (England) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_SVE)
 LANGUAGE LANG_SWEDISH, SUBLANG_SWEDISH
 #pragma code_page(1252)
 
 #ifdef APSTUDIO_INVOKED
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // TEXTINCLUDE
@@ -42,7 +41,7 @@ BEGIN
     "\0"
 END
 
-#endif    // APSTUDIO_INVOKED
+#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -84,7 +83,7 @@ BEGIN
     END
 END
 
-#endif    // Swedish (Sweden) resources
+#endif    // English (England) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -97,5 +96,5 @@ END
 
 
 /////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
+#endif
 
