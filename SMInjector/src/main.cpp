@@ -90,9 +90,6 @@ int main(int argc, char** argv) {
 	std::string exe_exe = std::string(game_path).append("\\Release\\ScrapMechanic.exe");
 	std::string exe_dir = std::string(game_path).append("\\Release");
 	if(startup(exe_exe, exe_dir, "-dev", hProcess, hThread)) {
-		DWORD pid = GetProcessId(hProcess);
-		printf("PID : [%d]\n", pid);
-		
 		if(!Inject(hProcess, dll_path.c_str())) {
 			printf("SMInjector: failed to inject dll file\n");
 			TerminateProcess(hProcess, 0);
@@ -105,19 +102,6 @@ int main(int argc, char** argv) {
 			printf("SMInjector: failed to inject PLUGIN dll file\n");
 			return 0;
 		}
-
-		/*
-		if(!inject(pid, dll_path.c_str())) {
-			printf("SMInjector: failed to inject dll file\n");
-			return 0;
-		}
-
-		std::string dll_plugin = get_dir_path().append("\\SMPlugin.dll");
-		if(!inject(pid, dll_plugin.c_str())) {
-			printf("SMInjector: failed to inject PLUGIN dll file\n");
-			return 0;
-		}
-		*/
 
 		ResumeThread(hThread);
 	}
