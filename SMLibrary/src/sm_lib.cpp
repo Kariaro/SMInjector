@@ -53,6 +53,8 @@ BOOL Startup(HMODULE hModule) {
 }
 
 BOOL PostConsoleInjections() {
+	if(true) return;
+
 	Console::log_open();
 	Console::log(Color::Aqua, "[SMLibrary]: Installing the library functions");
 	util = new HookUtility();
@@ -70,6 +72,7 @@ BOOL PostConsoleInjections() {
 		// Init the plugin
 		plugin.load();
 	}
+
 	/*
 	if(!InjectFMOD()) {
 		printf("Failed to execute [InjectFMOD]\n");
