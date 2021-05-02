@@ -3,6 +3,10 @@
 #include <iostream>
 #include <windows.h>
 #include <tlhelp32.h>
+
+#include <iterator>
+#include <filesystem>
+
 #include "find_steam.h"
 
 bool Inject(HANDLE, const char*);
@@ -97,11 +101,21 @@ int main(int argc, char** argv) {
 			return 0;
 		}
 
-		std::string dll_plugin = get_dir_path().append("\\SMPlugin.dll");
-		if(!Inject(hProcess, dll_plugin.c_str())) {
-			printf("SMInjector: failed to inject PLUGIN dll file\n");
-			return 0;
-		}
+		printf("\nSMInjector: Adding plugins.\n");
+        for(const auto& file : std::filesystem::directory_iterator(get_dir_path().append("\\plugins"))) {
+			char dll_plugin[512] = { 0 };
+            size_t num;
+            wcstombs_s(&num, dll_plugin, file.path().c_str(), 512);
+			
+			if(!Inject(hProcess, dll_plugin)) {
+				wprintf(L"  Failed to inject '%s'\n", file.path().filename().c_str());
+				return 0;
+			} else {
+				wprintf(L"  Injected '%s'\n", file.path().filename().c_str());
+			}
+        }
+
+		Sleep(500);
 
 		ResumeThread(hThread);
 	}

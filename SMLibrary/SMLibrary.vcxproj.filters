@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\hook.cpp">
+    <ClCompile Include="src\sm_lib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\sm_lib.cpp">
+    <ClCompile Include="src\hook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

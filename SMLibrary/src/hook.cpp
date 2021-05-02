@@ -116,10 +116,10 @@ bool Hook::Uninject() {
 	return true;
 }
 
-void *Hook::Gate() {
-	if(!gate) {
+inline void *Hook::Gate() {
+	/*if(!gate) {
 		printf("Invalid gate!\n");
-	}
+	}*/
 	
 	return gate;
 }

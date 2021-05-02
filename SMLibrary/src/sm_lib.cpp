@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <vector>
 
-#define _SM_PLUGIN_NAME "SMLibrary"
+#define _SM_PLUGIN_NAME SMLibrary
 
 #include "../include/sm_lib.h"
 #include "../include/hook.h"
@@ -28,6 +28,7 @@ _LIB_EXPORT void InjectPlugin(void* hModule, const char *plugin_name, LIB_CALLBA
 
 BOOL PostConsoleInjections();
 BOOL InjectLua();
+BOOL InjectPlayground();
 BOOL InjectFMOD();
 
 HookUtility *util;
@@ -37,10 +38,19 @@ HookUtility *util;
 BOOL Startup(HMODULE hModule) {
 	// This hooks is not going to be unloaded
 
-	hck_init_console = new Hook();
-	hck_init_console->Inject((void*)((longlong)GetModuleHandleA("ScrapMechanic.exe") + 0x1b5090), &Hooks::hook_init_console, 15);
+	HMODULE sm_handle = GetModuleHandleA("ScrapMechanic.exe");
+	if(!sm_handle) return false;
+	
+	DWORD oldProtect;
+	VirtualProtect((LPVOID)((longlong)sm_handle + 0x8f0000), 0x10000, PAGE_EXECUTE_READWRITE, &oldProtect);
 
-	// MessageBox(0, L"[Press OK to uninject]\n", L"[Pausing]", MB_ICONINFORMATION);
+	hck_init_console = new Hook();
+	hck_init_console->Inject((void*)((longlong)sm_handle + 0x1b5090), &Hooks::hook_init_console, 15);
+
+	// Execute some command
+
+	// 14070eeb0
+	// MessageBox(0, L"[Press OK to uninject Injected The Terrain TileReader]\n", L"[Pausing]", MB_ICONINFORMATION);
 	// util->Unload();
 	//delete util;
 	//Console::log_close();
@@ -53,6 +63,7 @@ BOOL PostConsoleInjections() {
 	Console::log(Color::Aqua, "[SMLibrary]: Installing the library functions");
 	util = new HookUtility();
 	InjectLua();
+	InjectPlayground();
 
 	const size_t plugins_size = plugins.size();
 	Console::log(Color::Aqua, "[SMLibrary]: Found '%d' plugin(s)", plugins_size);
@@ -121,6 +132,49 @@ BOOL InjectLua() {
 		Console::log(Color::Red, "[SMLibrary]: Failed to inject 'luaL_loadbuffer'");
 		return false;
 	}
+
+	return true;
+}
+
+BOOL InjectPlayground() {
+	HMODULE hModule = GetModuleHandleA("MyGUIEngine.dll");
+	Console::log(Color::LightYellow, "[SMLibrary]: MyGUIEngine.dll [%p]", hModule);
+	if(!hModule) return false;
+
+	// df990
+
+	void* getParent = (void*)((longlong)hModule + 0xdce10);//GetProcAddress(hModule, "getParent@Widget@MyGUI@@QEBAPEAV12@XZ");//"?getParent@Widget@MyGUI@@QEBAPEAV12@XZ");
+	//getParent = GetProcAddress(hModule, "MyGUI::Widget::getParent");
+	Console::log(Color::LightYellow, "[SMLibrary]: getParent [%p]", getParent);
+
+	hck_MyGUI_Widget_getParent = new Hook();
+	//hck_MyGUI_Widget_getParent->Inject(getParent, &Hooks::hook_MyGUI_Widget_getParent, 15);
+
+	hModule = GetModuleHandleA("ScrapMechanic.exe");
+	Console::log(Color::LightYellow, "[SMLibrary]: ScrapMechanic.exe [%p]", hModule);
+	if(!hModule) return false;
+	//1408f3650
+
+	
+	//char* HarvestableLibrary_ptr = (char*)((longlong)hModule + 0x8f3582);
+	//char* ShapeLibrary_ptr = (char*)((longlong)hModule + 0x8f362a);
+	//char* EnableHarvestable_ptr = (char*)((longlong)hModule + 0x8f357f);
+	//char* EnableShape_ptr = (char*)((longlong)hModule + 0x8f3627);
+
+	//EnableHarvestable_ptr[0] = 7;
+	//EnableShape_ptr[0] = 5; // Change compare to 5
+	//HarvestableLibrary_ptr[0] = 0xCC; // INT3
+	//ShapeLibrary_ptr[0] = 0xCC; // INT3
+	//Console::log(Color::LightYellow, "[SMLibrary]: Overwritten");
+
+	void* toggleWindowFunc = (void*)((longlong)hModule + 0x8f3520);
+	void* toggleWindowSetFunc = (void*)((longlong)hModule + 0x8f3a30);
+	
+	hck_ToggleTileEditorWindow = new Hook();
+	hck_ToggleTileEditorWindow->Inject(toggleWindowFunc, &Hooks::hook_ToggleTileEditorWindow, 561);
+
+	hck_ToggleTileEditorSetWindow = new Hook();
+	hck_ToggleTileEditorSetWindow->Inject(toggleWindowSetFunc, &Hooks::hook_ToggleTileEditorSetWindow, 17);
 
 	return true;
 }

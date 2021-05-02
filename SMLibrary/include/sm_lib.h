@@ -31,7 +31,11 @@ _LIB_IMPORT void InjectPlugin(void*, const char*, LIB_CALLBACK, LIB_CALLBACK);
 
 int __stdcall DllMain(void* hModule, unsigned long fdwReason, void* lpReserved) {
 	if(fdwReason == 1 /* DLL_PROCESS_ATTACH */) {
-		InjectPlugin(hModule, _SM_PLUGIN_NAME, PluginLoad, PluginUnload);
+#define _SM_LIBRARY_JS_(X) #X
+#define _SM_LIBRARY_JS(X) _SM_LIBRARY_JS_(X)
+		InjectPlugin(hModule, "" _SM_LIBRARY_JS(_SM_PLUGIN_NAME) "", PluginLoad, PluginUnload);
+#undef _SM_LIBRARY_JS_
+#undef _SM_LIBRARY_JS
 	}
 
 	//if(fdwReason == 0 /* DLL_PROCESS_DETACH */) {
