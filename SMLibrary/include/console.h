@@ -8,6 +8,8 @@
 #include <iostream>
 #endif
 
+#include <cstdarg>
+
 namespace Console {
 	enum class Color {
 		Black,
@@ -30,7 +32,7 @@ namespace Console {
 	
 #ifdef _SM_LIBRARY_BUILD_PLUGIN
 	_LIB_IMPORT
-	void log(Color color, const char *format, ...);
+	void vlogf(Color color, const char *plugin_name, const char *format, va_list args);
 #else
 	FILE* console_handle = NULL;
 	HANDLE hConsole;
@@ -48,19 +50,22 @@ namespace Console {
 	}
 
 	_LIB_EXPORT
-	void log(Color color, const char *format, ...) {
+	void vlogf(Color color, const char *plugin_name, const char *format, va_list args) {
 		if(!console_handle) return;
 
 		if(!hConsole) hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 		if(hConsole) SetConsoleTextAttribute(hConsole, (WORD)color);
 
-		va_list args;
-		va_start(args, format);
-		
+		printf("[%s]: ", plugin_name);
 		vprintf(format, args);
 		printf("\n");
 	}
 #endif
+	void log(Color color, const char *format, ...) {
+		va_list args;
+		va_start(args, format);
+		vlogf(color, _LIB_PLUGIN_NAME_STR, format, args);
+	}
 }
 
 #endif

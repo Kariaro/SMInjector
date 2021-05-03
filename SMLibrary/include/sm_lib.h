@@ -3,7 +3,7 @@
  * 
  * To build a custom plugin add this before you include this file
  *   #define _SM_LIBRARY_BUILD_PLUGIN
- *   #define _SM_PLUGIN_NAME "PluginName"
+ *   #define _SM_PLUGIN_NAME PluginName
  * 
  * 
  * Contributors:
@@ -18,12 +18,15 @@
 typedef int LIB_RESULT;
 typedef LIB_RESULT (*LIB_CALLBACK)();
 
-#ifdef _SM_LIBRARY_BUILD_PLUGIN
-
 #ifndef _SM_PLUGIN_NAME
-#define _SM_PLUGIN_NAME "Unnamed Plugin"
+#   error _SM_PLUGIN_NAME was undefined
 #endif
 
+#define _LIB_PLUGIN_NAME_STR__(X) #X
+#define _LIB_PLUGIN_NAME_STR_(X) _LIB_PLUGIN_NAME_STR__(X)
+#define _LIB_PLUGIN_NAME_STR "" _LIB_PLUGIN_NAME_STR_(_SM_PLUGIN_NAME) ""
+
+#ifdef _SM_LIBRARY_BUILD_PLUGIN
 extern LIB_RESULT PluginLoad();
 extern LIB_RESULT PluginUnload();
 
@@ -31,11 +34,7 @@ _LIB_IMPORT void InjectPlugin(void*, const char*, LIB_CALLBACK, LIB_CALLBACK);
 
 int __stdcall DllMain(void* hModule, unsigned long fdwReason, void* lpReserved) {
 	if(fdwReason == 1 /* DLL_PROCESS_ATTACH */) {
-#define _SM_LIBRARY_JS_(X) #X
-#define _SM_LIBRARY_JS(X) _SM_LIBRARY_JS_(X)
-		InjectPlugin(hModule, "" _SM_LIBRARY_JS(_SM_PLUGIN_NAME) "", PluginLoad, PluginUnload);
-#undef _SM_LIBRARY_JS_
-#undef _SM_LIBRARY_JS
+		InjectPlugin(hModule, _LIB_PLUGIN_NAME_STR, PluginLoad, PluginUnload);
 	}
 
 	//if(fdwReason == 0 /* DLL_PROCESS_DETACH */) {

@@ -40,7 +40,7 @@ namespace Injection {
 	}
 
 	void hook_ReadNode(void* a, _vector_ptr vec, void* b, void* c, void* d, int e) {
-		Console::log(Color::Aqua, "[TestPlugin]: hook_ReadNode: a=[%p], vec=[%p], b=[%p], c=[%p], d=[%p], e=[%d]", a, vec, b, c, d, e);
+		Console::log(Color::Aqua, "hook_ReadNode: a=[%p], vec=[%p], b=[%p], c=[%p], d=[%p], e=[%d]", a, vec, b, c, d, e);
 		((pReadNode)hck_ReadNode->Gate())(a, vec, b, c, d, e);
 
 		AddEntityToMemory(vec);
@@ -48,7 +48,7 @@ namespace Injection {
 	}
 
 	void hook_ReadBlueprintList(int a, _vector_ptr vec, void* b, void* c, void* d, int e, void* f, int g) {
-		Console::log(Color::Aqua, "[TestPlugin]: hook_ReadBlueprintList: a=[%d], vec=[%p], b=[%p], c=[%p], d=[%p], e=[%d], f=[%p], g=[%d]", a, vec, b, c, d, e, f, g);
+		Console::log(Color::Aqua, "hook_ReadBlueprintList: a=[%d], vec=[%p], b=[%p], c=[%p], d=[%p], e=[%d], f=[%p], g=[%d]", a, vec, b, c, d, e, f, g);
 		((pReadBlueprintList)hck_ReadBlueprintList->Gate())(a, vec, b, c, d, e, f, g);
 
 		AddEntityToMemory(vec);
@@ -58,7 +58,7 @@ namespace Injection {
 
 
 LIB_RESULT PluginLoad() {
-	Console::log(Color::Red, "[TestPlugin]: Testing this plugin!");
+	Console::log(Color::Red, "Testing this plugin!");
 
 	longlong sm_handle = Injection::get_sm_handle();
 
@@ -72,7 +72,7 @@ LIB_RESULT PluginLoad() {
 }
 
 LIB_RESULT PluginUnload() {
-	Console::log(Color::Red, "[TestPlugin]: Unloading this plugin!");
+	Console::log(Color::Red, "Unloading this plugin!");
 
 	Injection::hck_ReadNode->Uninject();
 	Injection::hck_ReadBlueprintList->Uninject();
