@@ -26,13 +26,7 @@
     <ClInclude Include="include\console.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\fmod.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\hook.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\lua.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\sm_lib.h">

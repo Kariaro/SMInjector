@@ -1,5 +1,5 @@
 #define _SM_LIBRARY_BUILD_PLUGIN
-#define _SM_PLUGIN_NAME TestPlugin
+#define _SM_PLUGIN_NAME TileEditorUnlocker
 
 #include <sm_lib.h>
 #include <console.h>
@@ -58,7 +58,7 @@ namespace Injection {
 
 
 LIB_RESULT PluginLoad() {
-	Console::log(Color::Red, "Testing this plugin!");
+	Console::log(Color::Aqua, "Unlocking the tile editor!");
 
 	longlong sm_handle = Injection::get_sm_handle();
 

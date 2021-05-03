@@ -1,6 +1,12 @@
 # SMInjector
+This project is a tool that allows modders to create c++ addons for the game ScrapMechanic.
 
-A tool that hooks into lua51.dll and reads input and output
+Inside the `PluginDevFolder` you will find examples of how to make plugins.
+
+
+## Creating a plugin
+To add a new plugin you can copy the settings from the `PluginDevFolder/SMPluginTemplate` project.
+You need to place the compiled plugin into the `plugins` folder for it to be loaded by the injector.
 
 
 ### Credits

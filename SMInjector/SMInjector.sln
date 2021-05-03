@@ -7,43 +7,52 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SMInjector", "SMInjector.vc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SMLibrary", "..\SMLibrary\SMLibrary.vcxproj", "{81368E09-9FA2-4F28-9915-22FE758BFD48}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SMPlugin", "..\SMPlugin\SMPlugin.vcxproj", "{F1011148-C7A7-40AF-949D-8A074675A148}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PluginDevelopment", "PluginDevelopment", "{4EC6A5BC-FCE4-4FFE-AC55-7D83B6B7C8D7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SMPluginTemplate", "..\PluginDevFolder\SMPluginTemplate\SMPluginTemplate.vcxproj", "{F09BBCFB-A1E3-43E0-8406-FBC8B72A09CA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{81368E09-9FA2-4F28-9915-22FE758BFD48} = {81368E09-9FA2-4F28-9915-22FE758BFD48}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TileEditorUnlockPlugin", "..\PluginDevFolder\TileEditorUnlockPlugin\TileEditorUnlockPlugin.vcxproj", "{16BDCA26-D20C-4AC4-8DB3-9C108719B752}"
+	ProjectSection(ProjectDependencies) = postProject
+		{81368E09-9FA2-4F28-9915-22FE758BFD48} = {81368E09-9FA2-4F28-9915-22FE758BFD48}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SMLuaReaderPlugin", "..\PluginDevFolder\SMLuaReaderPlugin\SMLuaReaderPlugin.vcxproj", "{13E88C11-DEB6-47D5-9382-4E5D484A58C2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{81368E09-9FA2-4F28-9915-22FE758BFD48} = {81368E09-9FA2-4F28-9915-22FE758BFD48}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
-		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{E94AFAD6-2262-40E4-81D3-CD0130B98C0B}.Debug|x64.ActiveCfg = Debug|x64
-		{E94AFAD6-2262-40E4-81D3-CD0130B98C0B}.Debug|x64.Build.0 = Debug|x64
-		{E94AFAD6-2262-40E4-81D3-CD0130B98C0B}.Debug|x86.ActiveCfg = Debug|Win32
-		{E94AFAD6-2262-40E4-81D3-CD0130B98C0B}.Debug|x86.Build.0 = Debug|Win32
 		{E94AFAD6-2262-40E4-81D3-CD0130B98C0B}.Release|x64.ActiveCfg = Release|x64
 		{E94AFAD6-2262-40E4-81D3-CD0130B98C0B}.Release|x64.Build.0 = Release|x64
-		{E94AFAD6-2262-40E4-81D3-CD0130B98C0B}.Release|x86.ActiveCfg = Release|Win32
-		{E94AFAD6-2262-40E4-81D3-CD0130B98C0B}.Release|x86.Build.0 = Release|Win32
 		{81368E09-9FA2-4F28-9915-22FE758BFD48}.Debug|x64.ActiveCfg = Debug|x64
-		{81368E09-9FA2-4F28-9915-22FE758BFD48}.Debug|x64.Build.0 = Debug|x64
-		{81368E09-9FA2-4F28-9915-22FE758BFD48}.Debug|x86.ActiveCfg = Debug|Win32
-		{81368E09-9FA2-4F28-9915-22FE758BFD48}.Debug|x86.Build.0 = Debug|Win32
 		{81368E09-9FA2-4F28-9915-22FE758BFD48}.Release|x64.ActiveCfg = Release|x64
 		{81368E09-9FA2-4F28-9915-22FE758BFD48}.Release|x64.Build.0 = Release|x64
-		{81368E09-9FA2-4F28-9915-22FE758BFD48}.Release|x86.ActiveCfg = Release|Win32
-		{81368E09-9FA2-4F28-9915-22FE758BFD48}.Release|x86.Build.0 = Release|Win32
-		{F1011148-C7A7-40AF-949D-8A074675A148}.Debug|x64.ActiveCfg = Debug|x64
-		{F1011148-C7A7-40AF-949D-8A074675A148}.Debug|x64.Build.0 = Debug|x64
-		{F1011148-C7A7-40AF-949D-8A074675A148}.Debug|x86.ActiveCfg = Debug|Win32
-		{F1011148-C7A7-40AF-949D-8A074675A148}.Debug|x86.Build.0 = Debug|Win32
-		{F1011148-C7A7-40AF-949D-8A074675A148}.Release|x64.ActiveCfg = Release|x64
-		{F1011148-C7A7-40AF-949D-8A074675A148}.Release|x64.Build.0 = Release|x64
-		{F1011148-C7A7-40AF-949D-8A074675A148}.Release|x86.ActiveCfg = Release|Win32
-		{F1011148-C7A7-40AF-949D-8A074675A148}.Release|x86.Build.0 = Release|Win32
+		{F09BBCFB-A1E3-43E0-8406-FBC8B72A09CA}.Debug|x64.ActiveCfg = Debug|x64
+		{F09BBCFB-A1E3-43E0-8406-FBC8B72A09CA}.Release|x64.ActiveCfg = Release|x64
+		{F09BBCFB-A1E3-43E0-8406-FBC8B72A09CA}.Release|x64.Build.0 = Release|x64
+		{16BDCA26-D20C-4AC4-8DB3-9C108719B752}.Debug|x64.ActiveCfg = Debug|x64
+		{16BDCA26-D20C-4AC4-8DB3-9C108719B752}.Release|x64.ActiveCfg = Release|x64
+		{16BDCA26-D20C-4AC4-8DB3-9C108719B752}.Release|x64.Build.0 = Release|x64
+		{13E88C11-DEB6-47D5-9382-4E5D484A58C2}.Debug|x64.ActiveCfg = Debug|x64
+		{13E88C11-DEB6-47D5-9382-4E5D484A58C2}.Release|x64.ActiveCfg = Release|x64
+		{13E88C11-DEB6-47D5-9382-4E5D484A58C2}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F09BBCFB-A1E3-43E0-8406-FBC8B72A09CA} = {4EC6A5BC-FCE4-4FFE-AC55-7D83B6B7C8D7}
+		{16BDCA26-D20C-4AC4-8DB3-9C108719B752} = {4EC6A5BC-FCE4-4FFE-AC55-7D83B6B7C8D7}
+		{13E88C11-DEB6-47D5-9382-4E5D484A58C2} = {4EC6A5BC-FCE4-4FFE-AC55-7D83B6B7C8D7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D7E2F6B1-96AC-4FB5-B8AA-FDB43C7F169E}
