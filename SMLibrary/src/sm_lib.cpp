@@ -13,6 +13,8 @@
 #include "../include/console.h"
 using Console::Color;
 
+constexpr longlong offset_InitConsole = 0x1b5090;
+
 struct LIB_PLUGIN {
 	const char *plugin_name = NULL;
 	HMODULE hModule = NULL;
@@ -27,28 +29,18 @@ _LIB_EXPORT void InjectPlugin(void* hModule, const char *plugin_name, LIB_CALLBA
 }
 
 BOOL PostConsoleInjections();
-BOOL InjectLua();
-BOOL InjectPlayground();
-BOOL InjectFMOD();
+//BOOL InjectLua();
 
 HookUtility *util;
 
 #include "hooks.h"
 
 BOOL Startup(HMODULE hModule) {
-	// This hooks is not going to be unloaded
-
 	HMODULE sm_handle = GetModuleHandleA("ScrapMechanic.exe");
 	if(!sm_handle) return false;
 	
 	hck_init_console = new Hook();
-	hck_init_console->Inject((void*)((longlong)sm_handle + 0x1b5090), &Hooks::hook_init_console, 15);
-
-	// MessageBox(0, L"[Press OK to uninject Injected The Terrain TileReader]\n", L"[Pausing]", MB_ICONINFORMATION);
-	// util->Unload();
-	//delete util;
-	//Console::log_close();
-	//FreeLibraryAndExitThread(hModule, 0);
+	hck_init_console->Inject((void*)((longlong)sm_handle + offset_InitConsole), &Hooks::hook_init_console, 15);
 	return true;
 }
 
@@ -56,8 +48,7 @@ BOOL PostConsoleInjections() {
 	Console::log_open();
 	Console::log(Color::Aqua, "Installing the library functions");
 	util = new HookUtility();
-	InjectLua();
-	InjectPlayground();
+	//InjectLua();
 
 	const size_t plugins_size = plugins.size();
 	Console::log(Color::Aqua, "Found '%d' plugin(s)", plugins_size);
@@ -70,12 +61,6 @@ BOOL PostConsoleInjections() {
 		// Init the plugin
 		plugin.load();
 	}
-
-	/*
-	if(!InjectFMOD()) {
-		printf("Failed to execute [InjectFMOD]\n");
-	}
-	*/
 
 	return true;
 }
@@ -100,6 +85,7 @@ BOOL WINAPI DllMain(HMODULE hModule, DWORD fdwReason, LPVOID lpReserved) {
 	return TRUE;
 }
 
+/*
 BOOL InjectLua() {
 	Console::log(Color::Aqua, "Installing lua hooks");
 
@@ -130,13 +116,8 @@ BOOL InjectLua() {
 
 	return true;
 }
-
-BOOL InjectPlayground() {
-	// Testing
-
-	return true;
-}
-
+*/
+/*
 typedef FMOD_RESULT (*pFMOD_System_CreateSound)(void *_this, const char *name_or_data, int mode, void *exinfo, void **sound);
 pFMOD_System_CreateSound FMOD_System_CreateSound;
 
@@ -192,3 +173,4 @@ BOOL InjectFMOD() {
 
 	return true;
 }
+*/
