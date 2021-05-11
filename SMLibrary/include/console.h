@@ -6,6 +6,12 @@
 #ifndef _SM_LIBRARY_BUILD_PLUGIN
 #include <windows.h>
 #include <iostream>
+
+#ifdef _SM_OUTPUT_LOGS
+#include <fcntl.h>
+#include <io.h>
+#endif
+
 #endif
 
 #include <cstdarg>
@@ -46,7 +52,11 @@ namespace Console {
 
 	void log_open() {
 		log_close();
+#ifdef _SM_OUTPUT_LOGS
 		freopen_s(&console_handle, "CONOUT$", "w", stdout);
+#else
+		freopen_s(&console_handle, "CONOUT$", "w", stdout);
+#endif
 	}
 
 	_LIB_EXPORT

@@ -4,6 +4,7 @@
 #include <vector>
 
 #define _SM_PLUGIN_NAME SMLibrary
+#define _SM_OUTPUT_LOGS
 
 #include "../include/sm_lib.h"
 #include "../include/hook.h"
@@ -34,9 +35,9 @@ HookUtility *util;
 BOOL Startup(HMODULE hModule) {
 	HMODULE sm_handle = GetModuleHandleA("ScrapMechanic.exe");
 	if(!sm_handle) return false;
-	
+
 	hck_init_console = new Hook();
-	hck_init_console->Inject((void*)((longlong)sm_handle + offset_InitConsole), &Hooks::hook_init_console, 15);
+	hck_init_console->Inject((void*)((longlong)sm_handle + offset_InitConsole), &Hooks::hook_init_console, 0, 15);
 	return true;
 }
 

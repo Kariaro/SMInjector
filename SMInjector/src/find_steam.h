@@ -13,35 +13,28 @@ namespace SteamFinder {
     using std::vector;
     using std::filesystem::directory_iterator;
 
-    LONG get_registry_string(HKEY hKey, const char* key_name, string& strValue) {
-        CHAR szBuffer[512] = { 0 };
+    LONG get_registry_string(HKEY hKey, const wchar_t* key_name, std::wstring& strValue) {
+        wchar_t szBuffer[512] = { 0 };
         DWORD dwBufferSize = sizeof(szBuffer);
-        ULONG nError = RegQueryValueExA(hKey, key_name, 0, NULL, (LPBYTE)szBuffer, &dwBufferSize);
+        ULONG nError = RegQueryValueExW(hKey, key_name, 0, NULL, (LPBYTE)szBuffer, &dwBufferSize);
         if(nError == ERROR_SUCCESS) strValue = szBuffer;
         return nError;
     }
 
-    string get_game_path() {
+    std::wstring get_game_path() {
         HKEY hKey;
         LONG lRes = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\WOW6432Node\\Valve\\Steam", 0, KEY_READ, &hKey);
-        string install_path;
-        get_registry_string(hKey, "InstallPath", install_path);
+        std::wstring install_path;
+        get_registry_string(hKey, L"InstallPath", install_path);
         RegCloseKey(hKey);
         return install_path;
     }
 
-    /*
-    inline bool does_file_exist(const string& name) {
-        struct stat buffer;
-        return (stat(name.c_str(), &buffer) == 0);
-    }
-    */
-
-    vector<string> get_steam_libraries(string install_path, string vdf_file) {
-        vector<string> vec;
+    vector<std::wstring> get_steam_libraries(std::wstring install_path, std::wstring vdf_file) {
+        vector<std::wstring> vec;
         vec.reserve(10);
 
-        vec.push_back(install_path.append("\\steamapps\\common"));
+        vec.push_back(install_path.append(L"\\steamapps\\common"));
         if(vdf_file.empty()) {
             return vec;
         }
@@ -50,7 +43,7 @@ namespace SteamFinder {
         std::string buffer(std::istreambuf_iterator<char>{infile}, {});
 
         if(!buffer.empty()) {
-            char temp[2048] = { 0 };
+            wchar_t temp[2048] = { 0 };
             int idx = 0;
             int len = 0;
 
@@ -64,7 +57,7 @@ namespace SteamFinder {
                     if(i > 16 && quote) {
                         len++;
                         if(len > 4 && ((len & 1) == 0)) {
-                            vec.push_back(string(temp).append("\\steamapps\\common"));
+                            vec.push_back(std::wstring(temp).append(L"\\steamapps\\common"));
                         }
 
                         temp[0] = 0;
@@ -83,29 +76,26 @@ namespace SteamFinder {
         return vec;
     }
 
-    string find_game_from_libs(vector<string> list, const char* game) {
-        std::wstring name(game, game + strlen(game));
+    std::wstring find_game_from_libs(vector<std::wstring> list, const wchar_t* game) {
+        std::wstring name(game);
 
         for(int i = 0; i < list.size(); i++) {
             for(const auto& file : directory_iterator(list[i])) {
                 if(file.path().filename().compare(name) == 0) {
-                    char szBuffer[512] = { 0 };
-                    size_t num;
-                    wcstombs_s(&num, szBuffer, file.path().c_str(), 512);
-                    return string(szBuffer);
+                    return std::wstring(file.path());
                 }
             }
         }
 
-        return "";
+        return L"";
     }
 
-    string FindGame(const char* game) {
-        string install_path = get_game_path();
-        if(install_path.empty()) return "";
+    std::wstring FindGame(const wchar_t* game) {
+        std::wstring install_path = get_game_path();
+        if(install_path.empty()) return L"";
 
-        string vdf_test = string(install_path).append("\\steamapps\\libraryfolders.vdf");
-        vector<string> libs = get_steam_libraries(install_path, vdf_test);
+        std::wstring vdf_test = std::wstring(install_path).append(L"\\steamapps\\libraryfolders.vdf");
+        vector<std::wstring> libs = get_steam_libraries(install_path, vdf_test);
         return find_game_from_libs(libs, game);
     }
 }
