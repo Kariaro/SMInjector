@@ -7,10 +7,17 @@ using Console::Color;
 
 #include <hook.h>
 
-constexpr longlong offset_GLOBAL_TILE_EDITOR = 0xe6e788;
-constexpr longlong offset_ADD_ENTITY = 0x8fb2c0;
-constexpr longlong offset_ReadNode = 0x93e920;
-constexpr longlong offset_ReadBlueprintList = 0x91d4b0;
+// debugSize == h.blueprintListCompressedSize
+
+// 0.5.1 Build 660:
+//   GLOBAL_TILE_EDITOR: 0xe708f8
+//   ADD_ENTITY:         0x8fa950
+//   ReadNode:           0x93dfb0
+//   ReadBlueprintList:  0x91cb40
+constexpr longlong offset_GLOBAL_TILE_EDITOR = 0xe708f8;
+constexpr longlong offset_ADD_ENTITY = 0x8fa950;
+constexpr longlong offset_ReadNode = 0x93dfb0;
+constexpr longlong offset_ReadBlueprintList = 0x91cb40;
 
 
 namespace Injection {

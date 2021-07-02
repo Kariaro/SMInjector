@@ -12,7 +12,8 @@
 #include "../include/console.h"
 using Console::Color;
 
-constexpr longlong offset_InitConsole = 0x1b5090;
+constexpr longlong offset_InitConsole = 0x1b5410;
+//0x1b5090;
 
 struct LIB_PLUGIN {
 	const char *plugin_name = NULL;
