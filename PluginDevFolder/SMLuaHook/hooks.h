@@ -28,6 +28,16 @@ Hook* hck_luaL_loadbuffer;
 namespace Hooks {
 	void hook_luaL_register(lua_State* L, const char* libname, const luaL_Reg* l) {
 		Console::log(Color::Aqua, "hook_luaL_register: libname=[%s]", libname);
+
+		const luaL_Reg* ptr = l;
+
+		int i = 0;
+		while (ptr->name != NULL) {
+			Console::log(Color::Aqua, "hook_luaL_register: luaL_Reg[%d] name=[%s] func=[%p]", i++, ptr->name, (void*)ptr->func);
+
+			ptr++;
+		}
+
 		return ((pluaL_register)hck_luaL_register->Gate())(L, libname, l);
 	}
 
