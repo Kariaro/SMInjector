@@ -91,6 +91,7 @@
   <ItemGroup>
     <ClInclude Include="include\console.h" />
     <ClInclude Include="include\hook.h" />
+    <ClInclude Include="include\plugin_config.h" />
     <ClInclude Include="include\sigscan.h" />
     <ClInclude Include="include\sm_lib.h" />
     <ClInclude Include="include\stdafx.h" />

@@ -3,6 +3,9 @@
 
 #include <sm_lib.h>
 #include <console.h>
+#include <sigscan.h>
+#include <plugin_config.h>
+
 using Console::Color;
 
 #include "hooks.h"
@@ -48,6 +51,10 @@ bool InjectLua() {
 		Console::log(Color::Red, "Failed to inject 'luaL_loadbuffer'");
 		return false;
 	}
+
+	PluginConfig config(_LIB_PLUGIN_NAME_STR, "test.json");
+	config.createIfNotExists();
+	config.load();
 
 	return true;
 }
