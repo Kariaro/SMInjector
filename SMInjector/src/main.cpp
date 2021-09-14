@@ -9,6 +9,8 @@
 
 #include "find_steam.h"
 
+namespace fs = std::filesystem;
+
 bool Inject(HANDLE, const wchar_t*);
 
 inline bool does_file_exist(const wchar_t* name) {
@@ -16,21 +18,13 @@ inline bool does_file_exist(const wchar_t* name) {
     return (_wstat(name, &buffer) == 0);
 }
 
-std::wstring get_dir_path() {
-	wchar_t buffer[MAX_PATH] = { 0 };
-    GetModuleFileNameW(NULL, buffer, MAX_PATH);
-    std::wstring::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
-	return std::wstring(buffer).substr(0, pos);
+fs::path get_dir_path() {
+	TCHAR dir[MAX_PATH] = { 0 };
+	DWORD length = GetModuleFileName(NULL, dir, _countof(dir));
+	return fs::path(dir).parent_path();
 }
 
-std::wstring get_dll_path(const wchar_t* dll_name) {
-    wchar_t buffer[MAX_PATH] = { 0 };
-    GetModuleFileNameW(NULL, buffer, MAX_PATH);
-    std::wstring::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
-	return std::wstring(buffer).substr(0, pos).append(L"\\").append(dll_name);
-}
-
-BOOL startup(std::wstring in_exe, std::wstring in_dir, std::wstring in_cmd, HANDLE &hProcess, HANDLE &hThread) {
+BOOL startup(fs::path in_exe, fs::path in_dir, std::wstring in_cmd, HANDLE &hProcess, HANDLE &hThread) {
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
 
@@ -39,8 +33,8 @@ BOOL startup(std::wstring in_exe, std::wstring in_dir, std::wstring in_cmd, HAND
 	wchar_t cmd[4097] = { 0 };
 	ZeroMemory(cmd, 4097);
 
-	memcpy(exe, in_exe.c_str(), min(in_exe.size() * 2, MAX_PATH + 1));
-	memcpy(dir, in_dir.c_str(), min(in_dir.size() * 2, MAX_PATH + 1));
+	memcpy(exe, in_exe.c_str(), min(in_exe.string().size() * 2, MAX_PATH + 1));
+	memcpy(dir, in_dir.c_str(), min(in_dir.string().size() * 2, MAX_PATH + 1));
 	swprintf_s(cmd, 4097, L"\"%s\" %s", exe, in_cmd.c_str());
 
 	//wprintf(L"EXE: [%s]\n", exe);
@@ -78,9 +72,10 @@ BOOL startup(std::wstring in_exe, std::wstring in_dir, std::wstring in_cmd, HAND
 int main(int argc, char** argv) {
 	printf("SMInjector: startup\n");
 	
-	std::wstring game_path = SteamFinder::FindGame(L"Scrap Mechanic");
-	std::wstring dll_path = get_dll_path(L"SMLibrary.dll");
-	
+	fs::path game_path = SteamFinder::FindGame(L"Scrap Mechanic");
+	fs::path dir_path = get_dir_path();
+	fs::path dll_path = dir_path / "SMLibrary.dll";
+
 	wprintf(L"GAME: [%s]\n", game_path.c_str());
 	wprintf(L"DLL : [%s]\n", dll_path.c_str());
 	
@@ -91,8 +86,8 @@ int main(int argc, char** argv) {
 	
 	HANDLE hProcess;
 	HANDLE hThread;
-	std::wstring exe_exe = std::wstring(game_path).append(L"\\Release\\ScrapMechanic.exe");
-	std::wstring exe_dir = std::wstring(game_path).append(L"\\Release");
+	fs::path exe_dir = game_path / "Release";
+	fs::path exe_exe = game_path / "Release" / "ScrapMechanic.exe";
 	if(startup(exe_exe, exe_dir, L"-dev", hProcess, hThread)) {
 		if(!Inject(hProcess, dll_path.c_str())) {
 			printf("SMInjector: failed to inject dll file\n");
@@ -101,8 +96,22 @@ int main(int argc, char** argv) {
 			return 0;
 		}
 
-		printf("\nSMInjector: Adding plugins.\n");
-        for(const auto& file : std::filesystem::directory_iterator(get_dir_path().append(L"\\plugins"))) {
+		if (!fs::exists(dir_path / "plugins" / "dependencies")) {
+			fs::create_directories(dir_path / "plugins" / "dependencies");
+		}
+
+		printf("\nSMInjector: Adding dependencies...\n");
+		for (const auto& file : fs::directory_iterator(dir_path / "plugins" / "dependencies")) {
+			if (!Inject(hProcess, file.path().c_str())) {
+				wprintf(L"  Failed to inject '%s'\n", file.path().filename().c_str());
+				return 0;
+			} else {
+				wprintf(L"  Injected '%s'\n", file.path().filename().c_str());
+			}
+		}
+
+		printf("\nSMInjector: Adding plugins...\n");
+        for(const auto& file : fs::directory_iterator(get_dir_path() / "plugins")) {
 			if(!Inject(hProcess, file.path().c_str())) {
 				wprintf(L"  Failed to inject '%s'\n", file.path().filename().c_str());
 				return 0;
