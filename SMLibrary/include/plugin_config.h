@@ -3,9 +3,14 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#pragma warning(push)
+#pragma warning(disable : 26819 28020)
+#include <nlohmann/json.hpp>
+#pragma warning(pop)
 #include "console.h"
 
 namespace fs = std::filesystem;
+using json = nlohmann::json;
 
 class PluginConfig {
 private:
@@ -18,12 +23,14 @@ private:
 	const char* defaultContent = "// Empty config file\n{}\n";
 
 public:
+	json root;
+
 	_LIB_FUNCTION static bool setConfigDirectory(const fs::path& configDirectory) {
 		PluginConfig::configDirectory = fs::absolute(configDirectory);
 
 		if (!fs::is_directory(configDirectory) || !fs::exists(configDirectory)) {
 			if (!fs::create_directories(configDirectory)) {
-				Console::wlog(Console::Color::Red, L"Failed creating main config directory \"%s\"", PluginConfig::configDirectory.c_str());
+				Console::wlog(Console::Color::LightRed, L"Failed creating main config directory \"%s\"", PluginConfig::configDirectory.c_str());
 				return false;
 			}
 		}
@@ -41,7 +48,7 @@ public:
 		this->pluginName = pluginName;
 		this->path = path;
 
-		this->fullPath = PluginConfig::getConfigDirectory() /= fs::path(pluginName) /= this->path;
+		this->fullPath = PluginConfig::getConfigDirectory() / fs::path(pluginName) / this->path;
 	}
 
 #ifdef _LIB_PLUGIN_NAME_STR
@@ -49,7 +56,7 @@ public:
 #endif
 
 	void setDefaultContent(const char* defaultContent) {
-		this->defaultContent = defaultContent;;
+		this->defaultContent = defaultContent;
 	}
 
 	bool createIfNotExists() {
@@ -67,7 +74,7 @@ public:
 
 		if (!ofs.is_open()) {
 #pragma warning(suppress : 4996)
-			Console::wlog(Console::Color::Red, L"Failed creating config file \"%s\": %s", this->fullPath.c_str(), _wcserror(errno));
+			Console::wlog(Console::Color::LightRed, L"Failed creating config file \"%s\": %s", this->fullPath.c_str(), _wcserror(errno));
 			return false;
 		}
 
@@ -82,13 +89,21 @@ public:
 
 		if (!ifs.is_open()) {
 #pragma warning(suppress : 4996)
-			Console::wlog(Console::Color::Red, L"Failed reading config file \"%s\": %s", this->fullPath.c_str(), _wcserror(errno));
+			Console::wlog(Console::Color::LightRed, L"Failed reading config file \"%s\": %s", this->fullPath.c_str(), _wcserror(errno));
 			return false;
 		}
 
-		Console::wlog(Console::Color::Gray, L"Loaded content of config file \"%s\":", this->fullPath.c_str());
+		Console::wlog(Console::Color::Gray, L"Loaded config file \"%s\"", this->fullPath.c_str());
 
-		std::cout << ifs.rdbuf() << std::endl;
+
+		try {
+			this->root = json::parse(ifs, nullptr, true, true);
+			std::cout << this->root.dump(4) << '\n';
+
+		} catch (json::exception& e) {
+			Console::wlog(Console::Color::LightRed, L"Failed parsing config file \"%s\":", this->fullPath.c_str());
+			Console::log(Console::Color::LightRed, "    %s", e.what());
+		}
 
 		ifs.close();
 

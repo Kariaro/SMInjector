@@ -22,6 +22,38 @@ LIB_RESULT PluginLoad() {
 	return PLUGIN_SUCCESSFULL;
 }
 
+const char *defaultConfig = R"(// Configuration file for hooking the Lua C API
+{
+	"hooks": {
+		"luaL_loadstring": [
+			{
+				"selector": {
+					"operator": "contains",
+					"value": "unsafe_env"
+				},
+				"file": {
+					"option": "replace_content",
+					"name": "$PLUGIN_CONFIG/override/unsafe_env.lua"
+				}
+			}
+		],
+		"luaL_loadbuffer": [
+			{
+				"selector": {
+				    "field": "name",
+				    "operator": "equals",
+				    "value": "Survival/Scripts/game/SurvivalGame.lua"
+				},
+				"file": {
+					"option": "replace_content",
+					"name": "$PLUGIN_CONFIG/override/files/SurvivalGame.lua"
+				}
+			}
+		]
+	}
+}
+)";
+
 HookUtility* util;
 bool InjectLua() {
 	Console::log(Color::Aqua, "Installing lua hooks");
@@ -52,7 +84,8 @@ bool InjectLua() {
 		return false;
 	}
 
-	PluginConfig config(_LIB_PLUGIN_NAME_STR, "test.json");
+	PluginConfig config(_LIB_PLUGIN_NAME_STR, "lua_hooks.json");
+	config.setDefaultContent(defaultConfig);
 	config.createIfNotExists();
 	config.load();
 

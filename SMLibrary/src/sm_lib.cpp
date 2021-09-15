@@ -55,7 +55,7 @@ BOOL Startup(HMODULE hModule) {
 BOOL PostConsoleInjections() {
 	Console::log_open();
 
-	PluginConfig::setConfigDirectory(smlibrarydllPath.parent_path() /= "config");
+	PluginConfig::setConfigDirectory(smlibrarydllPath.parent_path() / "config");
 
 	Console::log(Color::Aqua, "Installing the library functions");
 	util = new HookUtility();
