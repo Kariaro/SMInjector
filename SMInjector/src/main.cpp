@@ -12,6 +12,7 @@
 namespace fs = std::filesystem;
 
 bool Inject(HANDLE, const wchar_t*);
+bool InjectSetDllDirectory(HANDLE, const wchar_t*);
 
 inline bool does_file_exist(const wchar_t* name) {
     struct _stat buffer;
@@ -89,29 +90,35 @@ int main(int argc, char** argv) {
 	fs::path exe_dir = game_path / "Release";
 	fs::path exe_exe = game_path / "Release" / "ScrapMechanic.exe";
 	if(startup(exe_exe, exe_dir, L"-dev", hProcess, hThread)) {
-		if(!Inject(hProcess, dll_path.c_str())) {
-			printf("SMInjector: failed to inject dll file\n");
+
+		// Set the dll directory so SMLibrary.dll can load all it's dependencies
+		if (!InjectSetDllDirectory(hProcess, dir_path.c_str())) {
+			printf("SMInjector: Failed to inject dll directory\n");
 			TerminateProcess(hProcess, 0);
 			CloseHandle(hProcess);
 			return 0;
 		}
 
+		// Inject SMLibrary.dll
+		if (!Inject(hProcess, dll_path.c_str())) {
+			printf("SMInjector: Failed to inject SMLibrary.dll\n");
+			TerminateProcess(hProcess, 0);
+			CloseHandle(hProcess);
+			return 0;
+		}
+
+		// Create plugin dependencies directory
 		if (!fs::exists(dir_path / "plugins" / "dependencies")) {
 			fs::create_directories(dir_path / "plugins" / "dependencies");
 		}
 
-		printf("\nSMInjector: Adding dependencies...\n");
-		for (const auto& file : fs::directory_iterator(dir_path / "plugins" / "dependencies")) {
-			if (!Inject(hProcess, file.path().c_str())) {
-				wprintf(L"  Failed to inject '%s'\n", file.path().filename().c_str());
-				return 0;
-			} else {
-				wprintf(L"  Injected '%s'\n", file.path().filename().c_str());
-			}
-		}
-
+		// Inject plugins
 		printf("\nSMInjector: Adding plugins...\n");
         for(const auto& file : fs::directory_iterator(get_dir_path() / "plugins")) {
+			if (file.path().extension() != ".dll") {
+				continue;
+			}
+
 			if(!Inject(hProcess, file.path().c_str())) {
 				wprintf(L"  Failed to inject '%s'\n", file.path().filename().c_str());
 				return 0;
@@ -148,6 +155,37 @@ bool Inject(HANDLE hProc, const wchar_t* path) {
 	LPVOID LoadLibAddr = (LPVOID)GetProcAddress(kernel32, "LoadLibraryW");
 	HANDLE threadID = CreateRemoteThread(hProc, NULL, NULL, (LPTHREAD_START_ROUTINE)LoadLibAddr, lpvoid, NULL, NULL);
 	if(!threadID) {
+		return false;
+	}
+
+	WaitForSingleObject(threadID, INFINITE);
+	VirtualFreeEx(hProc, lpvoid, 0, MEM_RELEASE);
+	CloseHandle(threadID);
+	return true;
+}
+
+bool InjectSetDllDirectory(HANDLE hProc, const wchar_t* path) {
+	if (!does_file_exist(path)) {
+		return false;
+	}
+
+	const size_t path_length = wcslen(path) * 2;
+
+	LPVOID lpvoid = VirtualAllocEx(hProc, NULL, path_length, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	if (!lpvoid) {
+		return false;
+	}
+
+	WriteProcessMemory(hProc, lpvoid, path, path_length, NULL);
+	HMODULE kernel32 = GetModuleHandleA("kernel32.dll");
+	if (!kernel32) {
+		return false;
+	}
+
+	LPVOID SetDllDirectoryAddr = (LPVOID)GetProcAddress(kernel32, "SetDllDirectoryW");
+
+	HANDLE threadID = CreateRemoteThread(hProc, NULL, NULL, (LPTHREAD_START_ROUTINE)SetDllDirectoryAddr, lpvoid, NULL, NULL);
+	if (!threadID) {
 		return false;
 	}
 
