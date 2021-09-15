@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <vector>
 #include <filesystem>
+#include <system_error>
 
 namespace fs = std::filesystem;
 
@@ -39,13 +40,15 @@ HookUtility *util;
 
 fs::path smlibrarydllPath;
 
-BOOL Startup(HMODULE hModule) {
-	HMODULE sm_handle = GetModuleHandleA("ScrapMechanic.exe");
-	if(!sm_handle) return false;
-
+fs::path GetDllPath(HMODULE hModule) {
 	TCHAR dllPath[MAX_PATH] = { 0 };
 	DWORD length = GetModuleFileName(hModule, dllPath, _countof(dllPath));
-	smlibrarydllPath = fs::path(dllPath);
+	return fs::path(dllPath);
+}
+
+BOOL Startup() {
+	HMODULE sm_handle = GetModuleHandleA("ScrapMechanic.exe");
+	if(!sm_handle) return false;
 
 	hck_init_console = new Hook();
 	hck_init_console->Inject((void*)((longlong)sm_handle + offset_InitConsole), &Hooks::hook_init_console, 0, 15);
@@ -75,11 +78,45 @@ BOOL PostConsoleInjections() {
 	return true;
 }
 
+void SetupDllDirectories() {
+	fs::path baseDir = smlibrarydllPath.parent_path();
+
+	fs::path directories[] = {
+		baseDir,
+		baseDir / "plugins",
+		baseDir / "plugins" / "dependencies"
+	};
+
+	for (const fs::path& dir : directories) {
+		if (!AddDllDirectory(dir.c_str())) {
+			std::string body;
+			body += "Failed adding dll directory \"";
+			body += dir.string();
+			body += "\"\nSome plugins might not load\n\nReason:\n";
+			body += std::system_category().message(GetLastError());
+
+			MessageBoxA(0, body.c_str(), "AddDllDirectory failed", MB_ICONERROR);
+		}
+	}
+
+	if (!SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS)) {
+		std::string body;
+		body += "Some plugins might not load\n\nReason:\n";
+		body += std::system_category().message(GetLastError());
+
+		MessageBoxA(0, body.c_str(), "SetDefaultDllDirectories failed", MB_ICONERROR);
+	}
+}
+
 BOOL WINAPI DllMain(HMODULE hModule, DWORD fdwReason, LPVOID lpReserved) {
 	switch(fdwReason)  { 
 		case DLL_PROCESS_ATTACH:
 			MessageBox(0, L"From DLL\n", L"Process Attach", MB_ICONINFORMATION);
-			CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)Startup, hModule, NULL, NULL);
+
+			smlibrarydllPath = GetDllPath(hModule);
+
+			SetupDllDirectories();
+			Startup();
 			break;
 
 		case DLL_PROCESS_DETACH:
