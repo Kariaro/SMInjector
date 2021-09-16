@@ -38,5 +38,8 @@
     <ClInclude Include="src\hooks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\gamehook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

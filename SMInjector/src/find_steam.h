@@ -47,6 +47,7 @@ namespace SteamFinder {
             int idx = 0;
             int len = 0;
 
+            bool next_is_path = false;
             bool quote = false;
             for(int i = 16; i < buffer.size(); i++) {
                 char c = buffer[i];
@@ -54,16 +55,20 @@ namespace SteamFinder {
 
                 if(c == '"') {
                     temp[idx] = 0;
-                    if(i > 16 && quote) {
+                    if(quote) {
                         len++;
-                        if(len > 4 && ((len & 1) == 0)) {
+                        
+                        if(next_is_path) {
                             vec.push_back(std::wstring(temp).append(L"\\steamapps\\common"));
+                            next_is_path = false;
+                        } else {
+                            next_is_path = (wcscmp(temp, L"path") == 0);
                         }
 
                         temp[0] = 0;
                         idx = 0;
                     }
-
+                    
                     quote = !quote;
                 } else {
                     if(quote) {

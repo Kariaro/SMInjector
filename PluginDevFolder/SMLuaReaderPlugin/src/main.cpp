@@ -19,16 +19,14 @@ LIB_RESULT PluginLoad() {
 	return PLUGIN_SUCCESSFULL;
 }
 
-HookUtility* util;
 bool InjectLua() {
 	Console::log(Color::Aqua, "Installing lua hooks");
 
-	util = new HookUtility();
-	hck_luaL_register = util->InjectFromName("lua51.dll", "luaL_register", &Hooks::hook_luaL_register, 15);
-	hck_luaL_loadstring = util->InjectFromName("lua51.dll", "luaL_loadstring", &Hooks::hook_luaL_loadstring, 16);
-	hck_lua_newstate = util->InjectFromName("lua51.dll", "lua_newstate", &Hooks::hook_lua_newstate, -14, 6);
-	hck_luaL_loadbuffer = util->InjectFromName("lua51.dll", "luaL_loadbuffer", &Hooks::hook_luaL_loadbuffer, 17, 13);
-	
+	hck_luaL_register = GameHooks::InjectFromName("lua51.dll", "luaL_register", &Hooks::hook_luaL_register, 15);
+	hck_luaL_loadstring = GameHooks::InjectFromName("lua51.dll", "luaL_loadstring", &Hooks::hook_luaL_loadstring, 16);
+	hck_lua_newstate = GameHooks::InjectFromName("lua51.dll", "lua_newstate", &Hooks::hook_lua_newstate, 6);
+	hck_luaL_loadbuffer = GameHooks::InjectFromName("lua51.dll", "luaL_loadbuffer", &Hooks::hook_luaL_loadbuffer, 13);
+
 	if(!hck_luaL_register) {
 		Console::log(Color::Red, "Failed to inject 'luaL_register'");
 		return false;
@@ -54,6 +52,6 @@ bool InjectLua() {
 
 LIB_RESULT PluginUnload() {
 	Console::log(Color::Aqua, "Unloading this plugin!");
-	util->Unload();
+	//util->Unload();
 	return PLUGIN_SUCCESSFULL;
 }

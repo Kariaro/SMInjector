@@ -1,5 +1,14 @@
 #include <windows.h>
 
+#ifndef _SM_LIBRARY_ALLOW_OLD_HOOKS
+#error \
+The header file 'hook.h' is deprecated and will be removed in the future.\
+To enable this header use '#define _SM_LIBRARY_ALLOW_OLD_HOOKS'\
+This header will be removed in the future.
+#else
+#pragma message ("The header file 'hook.h' is deprecated and will be removed in the future.")
+#endif
+
 #include <string>
 using std::string;
 
