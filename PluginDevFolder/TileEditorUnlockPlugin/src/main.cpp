@@ -5,7 +5,8 @@
 #include <console.h>
 using Console::Color;
 
-#include <hook.h>
+#include "windows.h"
+#include <gamehook.h>
 
 // debugSize == h.blueprintListCompressedSize
 
@@ -24,10 +25,10 @@ namespace Injection {
 	typedef longlong* _vector_ptr;
 
 	typedef void(*pReadNode)(void*, _vector_ptr, void*, void*, void*, int);
-	Hook *hck_ReadNode;
+	GameHook *hck_ReadNode;
 
 	typedef void(*pReadBlueprintList)(int, _vector_ptr, void*, void*, void*, int, void*, int);
-	Hook *hck_ReadBlueprintList;
+	GameHook *hck_ReadBlueprintList;
 
 	longlong get_sm_handle() {
 		return (longlong)GetModuleHandleA("ScrapMechanic.exe");
@@ -48,7 +49,7 @@ namespace Injection {
 
 	void hook_ReadNode(void* a, _vector_ptr vec, void* b, void* c, void* d, int e) {
 		Console::log(Color::Aqua, "hook_ReadNode: a=[%p], vec=[%p], b=[%p], c=[%p], d=[%p], e=[%d]", a, vec, b, c, d, e);
-		((pReadNode)hck_ReadNode->Gate())(a, vec, b, c, d, e);
+		((pReadNode)*hck_ReadNode)(a, vec, b, c, d, e);
 
 		AddEntityToMemory(vec);
 		return;
@@ -56,7 +57,7 @@ namespace Injection {
 
 	void hook_ReadBlueprintList(int a, _vector_ptr vec, void* b, void* c, void* d, int e, void* f, int g) {
 		Console::log(Color::Aqua, "hook_ReadBlueprintList: a=[%d], vec=[%p], b=[%p], c=[%p], d=[%p], e=[%d], f=[%p], g=[%d]", a, vec, b, c, d, e, f, g);
-		((pReadBlueprintList)hck_ReadBlueprintList->Gate())(a, vec, b, c, d, e, f, g);
+		((pReadBlueprintList)*hck_ReadBlueprintList)(a, vec, b, c, d, e, f, g);
 
 		AddEntityToMemory(vec);
 		return;
@@ -69,11 +70,8 @@ LIB_RESULT PluginLoad() {
 
 	longlong sm_handle = Injection::get_sm_handle();
 
-	Injection::hck_ReadNode = new Hook();
-	Injection::hck_ReadNode->Inject((void*)(sm_handle + offset_ReadNode), &Injection::hook_ReadNode, 14);
-	
-	Injection::hck_ReadBlueprintList = new Hook();
-	Injection::hck_ReadBlueprintList->Inject((void*)(sm_handle + offset_ReadBlueprintList), &Injection::hook_ReadBlueprintList, 16);
+	Injection::hck_ReadNode = GameHooks::Inject((void*)(sm_handle + offset_ReadNode), &Injection::hook_ReadNode, 14);
+	Injection::hck_ReadBlueprintList = GameHooks::Inject((void*)(sm_handle + offset_ReadBlueprintList), &Injection::hook_ReadBlueprintList, 16);
 
 	return PLUGIN_SUCCESSFULL;
 }
@@ -81,8 +79,8 @@ LIB_RESULT PluginLoad() {
 LIB_RESULT PluginUnload() {
 	Console::log(Color::Red, "Unloading this plugin!");
 
-	Injection::hck_ReadNode->Uninject();
-	Injection::hck_ReadBlueprintList->Uninject();
+	//Injection::hck_ReadNode->Uninject();
+	//Injection::hck_ReadBlueprintList->Uninject();
 
 	return PLUGIN_SUCCESSFULL;
 }

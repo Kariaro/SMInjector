@@ -90,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\console.h" />
+    <ClInclude Include="include\gamehook.h" />
     <ClInclude Include="include\hook.h" />
     <ClInclude Include="include\plugin_config.h" />
     <ClInclude Include="include\sigscan.h" />

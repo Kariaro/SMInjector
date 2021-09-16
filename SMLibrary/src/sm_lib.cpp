@@ -11,12 +11,12 @@ namespace fs = std::filesystem;
 #define _SM_OUTPUT_LOGS
 
 #include "../include/sm_lib.h"
-#include "../include/hook.h"
 #include "../include/plugin_config.h"
 
 #include "../include/console.h"
 using Console::Color;
 
+#include "../include/gamehook.h"
 constexpr longlong offset_InitConsole = 0x1b5410;
 //0x1b5090;
 
@@ -34,7 +34,6 @@ _LIB_EXPORT void InjectPlugin(void* hModule, const char *plugin_name, LIB_CALLBA
 }
 
 BOOL PostConsoleInjections();
-HookUtility *util;
 
 #include "hooks.h"
 
@@ -50,8 +49,8 @@ BOOL Startup() {
 	HMODULE sm_handle = GetModuleHandleA("ScrapMechanic.exe");
 	if(!sm_handle) return false;
 
-	hck_init_console = new Hook();
-	hck_init_console->Inject((void*)((longlong)sm_handle + offset_InitConsole), &Hooks::hook_init_console, 0, 15);
+	hck_init_console = GameHooks::Inject((void*)((longlong)sm_handle + offset_InitConsole), &Hooks::hook_init_console, 5);
+
 	return true;
 }
 
@@ -61,7 +60,6 @@ BOOL PostConsoleInjections() {
 	PluginConfig::setConfigDirectory(smlibrarydllPath.parent_path() / "config");
 
 	Console::log(Color::Aqua, "Installing the library functions");
-	util = new HookUtility();
 
 	const size_t plugins_size = plugins.size();
 	Console::log(Color::Aqua, "Found '%d' plugin(s)", plugins_size);

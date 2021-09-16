@@ -1,3 +1,4 @@
+#define _SM_LIBRARY_ALLOW_OLD_HOOKS
 #include "../include/hook.h"
 
 Hook::~Hook() {
