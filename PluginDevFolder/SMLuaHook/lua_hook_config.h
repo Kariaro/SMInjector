@@ -82,6 +82,15 @@ namespace LuaHook {
 
 				return input.find(value) != std::string::npos;
 			}
+		},
+		{
+			"EQUALS", [](std::map<std::string, std::any> fields, hookItem hookItem, selector selector) {
+				std::string input = SelectorHelper::getInputConstCharPtr(fields, hookItem, selector);
+
+				std::string value = selector.j_selector.at("value");
+
+				return input.compare(value) == 0;
+			}
 		}
 	};
 

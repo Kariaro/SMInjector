@@ -67,6 +67,19 @@ namespace LuaHook::Hooks {
 
 	int hook_luaL_loadbuffer(lua_State* L, const char* buff, size_t sz, const char* name) {
 		Console::log(Color::Aqua, "hck_luaL_loadbuffer: buff=[ ... ], sz=[%zu], name=[%s]", sz, name);
+
+		std::map<std::string, std::any> fields = {
+			{"buff", &buff},
+			{"name", &name}
+		};
+
+		for (LuaHook::hookItem& hookItem : LuaHook::HookConfig::getHookItems("luaL_loadbuffer")) {
+			for (LuaHook::selector& selector : hookItem.selector) {
+				bool selected = (*selector.func)(fields, hookItem, selector);
+				Console::log(selected ? Color::LightPurple : Color::Purple, selected ? "selected" : "not selected");
+			}
+		}
+
 		return ((pluaL_loadbuffer)*hck_luaL_loadbuffer)(L, buff, sz, name);
 	}
 }
