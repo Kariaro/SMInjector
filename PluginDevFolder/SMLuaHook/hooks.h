@@ -25,7 +25,7 @@ GameHook* hck_luaL_loadbuffer;
 
 // =============
 
-namespace Hooks {
+namespace LuaHook::Hooks {
 	void hook_luaL_register(lua_State* L, const char* libname, const luaL_Reg* l) {
 		Console::log(Color::Aqua, "hook_luaL_register: libname=[%s]", libname);
 

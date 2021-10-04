@@ -5,6 +5,7 @@
 #include <iostream>
 #pragma warning(push)
 #pragma warning(disable : 26819 28020)
+#define JSON_DIAGNOSTICS 1
 #include <nlohmann/json.hpp>
 #pragma warning(pop)
 #include "console.h"

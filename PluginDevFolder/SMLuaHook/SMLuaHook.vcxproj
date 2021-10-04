@@ -15,6 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hooks.h" />
+    <ClInclude Include="lua_hook_config.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

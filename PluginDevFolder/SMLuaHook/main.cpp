@@ -9,6 +9,7 @@
 using Console::Color;
 
 #include "hooks.h"
+#include "lua_hook_config.h"
 bool InjectLua();
 
 LIB_RESULT PluginLoad() {
@@ -57,10 +58,10 @@ const char* defaultConfig = R"(// Configuration file for hooking the Lua C API
 bool InjectLua() {
 	Console::log(Color::Aqua, "Installing lua hooks");
 
-	hck_luaL_register = GameHooks::InjectFromName("lua51.dll", "luaL_register", &Hooks::hook_luaL_register, 15);
-	hck_luaL_loadstring = GameHooks::InjectFromName("lua51.dll", "luaL_loadstring", &Hooks::hook_luaL_loadstring, 16);
-	hck_lua_newstate = GameHooks::InjectFromName("lua51.dll", "lua_newstate", &Hooks::hook_lua_newstate, 6);
-	hck_luaL_loadbuffer = GameHooks::InjectFromName("lua51.dll", "luaL_loadbuffer", &Hooks::hook_luaL_loadbuffer, 13);
+	hck_luaL_register = GameHooks::InjectFromName("lua51.dll", "luaL_register", &LuaHook::Hooks::hook_luaL_register, 15);
+	hck_luaL_loadstring = GameHooks::InjectFromName("lua51.dll", "luaL_loadstring", &LuaHook::Hooks::hook_luaL_loadstring, 16);
+	hck_lua_newstate = GameHooks::InjectFromName("lua51.dll", "lua_newstate", &LuaHook::Hooks::hook_lua_newstate, 6);
+	hck_luaL_loadbuffer = GameHooks::InjectFromName("lua51.dll", "luaL_loadbuffer", &LuaHook::Hooks::hook_luaL_loadbuffer, 13);
 
 	if (!hck_luaL_register) {
 		Console::log(Color::Red, "Failed to inject 'luaL_register'");
@@ -86,6 +87,21 @@ bool InjectLua() {
 	config.setDefaultContent(defaultConfig);
 	config.createIfNotExists();
 	config.load();
+
+	try {
+		Console::log(Color::Aqua, "Loading Lua C API hook config files...");
+		LuaHook::HookConfig *hookConfig = new LuaHook::HookConfig(config.root);
+		hookConfig->setEnabled(true);
+	}
+	catch (const json::exception& e) {
+		Console::log(Color::LightRed, "Failed initialising HookConfig: %s", e.what());
+	}
+
+	Console::log(Color::Aqua, "Loaded %llu Lua C API hook config files", LuaHook::HookConfig::enabledConfigs.size());
+	for (auto& hookName : LuaHook::HookConfig::getHookNames()) {
+		Console::log(Color::Aqua, "    %s (%llu)", hookName.c_str(), LuaHook::HookConfig::getHookItems(hookName).size());
+	}
+
 
 	return true;
 }
