@@ -6,6 +6,8 @@
 #include <console.h>
 using Console::Color;
 
+#include "lua_hook_config.h"
+
 
 // LUAL_REGISTER
 typedef void (*pluaL_register)(lua_State*, const char*, const luaL_Reg*);
@@ -43,6 +45,18 @@ namespace LuaHook::Hooks {
 
 	int hook_luaL_loadstring(lua_State* L, const char* s) {
 		Console::log(Color::Aqua, "hook_luaL_loadstring: s=[ ... ]");
+
+		std::map<std::string, std::any> fields = {
+			{"s", &s}
+		};
+
+		for (LuaHook::hookItem& hookItem : LuaHook::HookConfig::getHookItems("luaL_loadstring")) {
+			for (LuaHook::selector& selector : hookItem.selector) {
+				bool selected = (*selector.func)(fields, hookItem, selector);
+				Console::log(selected ? Color::LightPurple : Color::Purple, selected ? "selected" : "not selected");
+			}
+		}
+
 		return ((pluaL_loadstring)*hck_luaL_loadstring)(L, s);
 	}
 
