@@ -138,13 +138,35 @@ namespace LuaHook {
 
 
 	void from_json(const json& j, selector& s) {
-		s.func = &selectorFunctions.at(j.at("operator").get<std::string>());
+		std::string op = j.at("operator").get<std::string>();
+
+		if (selectorFunctions.find(op) == selectorFunctions.end()) {
+			std::vector<std::string> opList;
+			for (auto const& opFunc : selectorFunctions) {
+				opList.push_back(opFunc.first);
+			}
+
+			throw std::exception((std::string() + "Unknown operator \"" + op + "\". Possible operators: " + json(opList).dump()).c_str());
+		}
+
+		s.func = &selectorFunctions.at(op);
 
 		j.get_to(s.j_selector);
 	}
 
 	void from_json(const json& j, executor& e) {
-		e.func = &executorFunctions.at(j.at("command").get<std::string>());
+		std::string command = j.at("command").get<std::string>();
+
+		if (executorFunctions.find(command) == executorFunctions.end()) {
+			std::vector<std::string> commandList;
+			for (auto const& cmdFunc : executorFunctions) {
+				commandList.push_back(cmdFunc.first);
+			}
+
+			throw std::exception((std::string() + "Unknown command \"" + command + "\". Possible commands: " + json(commandList).dump()).c_str());
+		}
+
+		e.func = &executorFunctions.at(command);
 
 		j.get_to(e.j_executor);
 	}
@@ -172,10 +194,16 @@ namespace LuaHook {
 		HookConfig(json root) {
 			this->root = root;
 
-			//assert(this->root["hooks"], "lua hook config has no \"hooks\" object");
-
 			for (auto& [key, value] : this->root.at("hooks").items()) {
-				this->hooks[key] = value.get<std::vector<hookItem>>();
+				try {
+					this->hooks[key] = value.get<std::vector<hookItem>>();
+				}
+				catch (json::exception e) {
+					Console::log(Color::LightRed, "Failed parsing %s hooks: %s", key.c_str(), e.what());
+				}
+				catch (std::exception e) {
+					Console::log(Color::LightRed, "Failed processing %s hooks: %s", key.c_str(), e.what());
+				}
 			}
 		}
 
