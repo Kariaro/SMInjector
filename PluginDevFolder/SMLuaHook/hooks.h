@@ -51,36 +51,11 @@ namespace LuaHook::Hooks {
 			{"s", &s}
 		};
 
-		for (LuaHook::hookItem& hookItem : LuaHook::HookConfig::getHookItems("luaL_loadstring")) {
-			bool selected = true;
+		std::string input(s);
 
-			for (LuaHook::selector& selector : hookItem.selector) {
-				selected &= (*selector.func)(fields, hookItem, selector);
-
-				Console::log(selected ? Color::LightPurple : Color::Purple, selected ? "selected" : "not selected");
-
-				if (!selected) {
-					break;
-				}
-			}
-
-			if (selected) {
-				std::string sStr(s);
-
-				for (LuaHook::executor& executor : hookItem.execute) {
-					try {
-						if (executor.command == "REPLACE_CONTENT_WITH_FILE") {
-							sStr = LuaHook::ExecutorHelper::readFile(PathHelper::resolvePath(executor.j_executor.at("file")));
-						}
-					}
-					catch (std::exception& e) {
-						Console::log(Color::LightRed, "Failed executing executor %s: %s", executor.j_executor.dump(4).c_str(), e.what());
-					}
-				}
-
-				Console::log(Color::Green, "Set contents to:\n%s", sStr.c_str());
-				return ((pluaL_loadstring)*hck_luaL_loadstring)(L, sStr.c_str());
-			}
+		if (LuaHook::runLuaHook("luaL_loadstring", &input, fields)) {
+			Console::log(Color::Green, "Set contents to:\n%s", input.c_str());
+			return ((pluaL_loadstring)*hck_luaL_loadstring)(L, input.c_str());
 		}
 
 		return ((pluaL_loadstring)*hck_luaL_loadstring)(L, s);

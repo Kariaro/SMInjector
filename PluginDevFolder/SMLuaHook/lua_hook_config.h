@@ -20,9 +20,11 @@ using json = nlohmann::json;
 namespace LuaHook {
 
 	struct selector;
+	struct executor;
 	struct hookItem;
 
-	typedef std::function<bool(std::map<std::string, std::any> fields, hookItem hookItem, selector selector)> selectorFunction;
+	typedef std::function<bool(std::map<std::string, std::any>& fields, hookItem& hookItem, selector& selector)> selectorFunction;
+	typedef std::function<std::string(std::string* input, hookItem& hookItem, executor& executor)> executorFunction;
 
 	struct selector {
 		selectorFunction* func;
@@ -31,7 +33,7 @@ namespace LuaHook {
 	};
 
 	struct executor {
-		std::string command;
+		executorFunction* func;
 
 		json j_executor;
 	};
@@ -87,7 +89,7 @@ namespace LuaHook {
 	
 	std::map<std::string, selectorFunction> selectorFunctions = {
 		{
-			"CONTAINS", [](std::map<std::string, std::any> fields, hookItem hookItem, selector selector) {
+			"CONTAINS", [](std::map<std::string, std::any>& fields, hookItem& hookItem, selector& selector) {
 				std::string input = SelectorHelper::getInputConstCharPtr(fields, hookItem, selector);
 				
 				std::string value = selector.j_selector.at("value");
@@ -96,7 +98,7 @@ namespace LuaHook {
 			}
 		},
 		{
-			"EQUALS", [](std::map<std::string, std::any> fields, hookItem hookItem, selector selector) {
+			"EQUALS", [](std::map<std::string, std::any>& fields, hookItem& hookItem, selector& selector) {
 				std::string input = SelectorHelper::getInputConstCharPtr(fields, hookItem, selector);
 
 				std::string value = selector.j_selector.at("value");
@@ -125,6 +127,14 @@ namespace LuaHook {
 
 	}
 
+	std::map<std::string, executorFunction> executorFunctions = {
+		{
+			"REPLACE_CONTENT_WITH_FILE", [](std::string* input, hookItem& hookItem, executor& executor) {
+				return input->assign(LuaHook::ExecutorHelper::readFile(PathHelper::resolvePath(executor.j_executor.at("file"))));
+			}
+		}
+	};
+
 
 
 	void from_json(const json& j, selector& s) {
@@ -134,7 +144,7 @@ namespace LuaHook {
 	}
 
 	void from_json(const json& j, executor& e) {
-		j.at("command").get_to(e.command);
+		e.func = &executorFunctions.at(j.at("command").get<std::string>());
 
 		j.get_to(e.j_executor);
 	}
@@ -231,5 +241,42 @@ namespace LuaHook {
 		}
 
 	};
+
+
+
+	bool runLuaHook(std::string name, std::string* input, std::map<std::string, std::any>& fields) {
+		bool hasDoneSomething = false;
+
+		for (hookItem& hookItem : HookConfig::getHookItems(name)) {
+			bool selected = true;
+
+			for (selector& selector : hookItem.selector) {
+				selected &= (*selector.func)(fields, hookItem, selector);
+
+				Console::log(selected ? Color::LightPurple : Color::Purple, selected ? "selected" : "not selected");
+
+				if (!selected) {
+					break;
+				}
+			}
+
+			if (selected) {
+
+				for (executor& executor : hookItem.execute) {
+					try {
+						(*executor.func)(input, hookItem, executor);
+
+						hasDoneSomething = true;
+					}
+					catch (std::exception& e) {
+						Console::log(Color::LightRed, "Failed executing executor %s: %s", executor.j_executor.dump(4).c_str(), e.what());
+					}
+				}
+
+			}
+		}
+
+		return hasDoneSomething;
+	}
 
 }
