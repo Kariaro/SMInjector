@@ -132,6 +132,11 @@ namespace LuaHook {
 			"REPLACE_CONTENT_WITH_FILE", [](std::string* input, hookItem& hookItem, executor& executor) {
 				return input->assign(LuaHook::ExecutorHelper::readFile(PathHelper::resolvePath(executor.j_executor.at("file"))));
 			}
+		},
+		{
+			"APPEND_FILE", [](std::string* input, hookItem& hookItem, executor& executor) {
+				return input->append("\n").append(LuaHook::ExecutorHelper::readFile(PathHelper::resolvePath(executor.j_executor.at("file"))));
+			}
 		}
 	};
 
