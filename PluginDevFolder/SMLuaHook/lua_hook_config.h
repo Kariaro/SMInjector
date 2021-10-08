@@ -8,6 +8,12 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
+#include <string>
+
+namespace fs = std::filesystem;
 
 using json = nlohmann::json;
 
@@ -23,11 +29,17 @@ namespace LuaHook {
 
 		json j_selector;
 	};
+
+	struct executor {
+		std::string command;
+
+		json j_executor;
+	};
 	
 	struct hookItem {
 		float priority = 1;
 		std::vector<selector> selector;
-		std::vector<json> execute;
+		std::vector<executor> execute;
 
 		json j_hook;
 
@@ -96,10 +108,35 @@ namespace LuaHook {
 
 
 
+	namespace ExecutorHelper {
+
+		std::string readFile(fs::path path) {
+			std::ifstream in(path);
+
+			if (in.fail()) {
+#pragma warning(suppress : 4996)
+				throw std::exception((std::string() + "Failed to open file \"" + path.string() + "\": " + strerror(errno)).c_str());
+			}
+
+			std::ostringstream sstr;
+			sstr << in.rdbuf();
+			return sstr.str();
+		}
+
+	}
+
+
+
 	void from_json(const json& j, selector& s) {
 		s.func = &selectorFunctions.at(j.at("operator").get<std::string>());
 
 		j.get_to(s.j_selector);
+	}
+
+	void from_json(const json& j, executor& e) {
+		j.at("command").get_to(e.command);
+
+		j.get_to(e.j_executor);
 	}
 
 	void from_json(const json& j, hookItem& hi) {
