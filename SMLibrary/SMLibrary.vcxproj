@@ -92,6 +92,7 @@
     <ClInclude Include="include\console.h" />
     <ClInclude Include="include\gamehook.h" />
     <ClInclude Include="include\hook.h" />
+    <ClInclude Include="include\path_helper.h" />
     <ClInclude Include="include\plugin_config.h" />
     <ClInclude Include="include\sigscan.h" />
     <ClInclude Include="include\sm_lib.h" />
