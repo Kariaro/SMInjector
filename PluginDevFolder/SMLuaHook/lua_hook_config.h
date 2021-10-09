@@ -24,7 +24,7 @@ namespace LuaHook {
 	struct hookItem;
 
 	typedef std::function<bool(std::map<std::string, std::any>& fields, hookItem& hookItem, selector& selector)> selectorFunction;
-	typedef std::function<std::string(std::string* input, hookItem& hookItem, executor& executor)> executorFunction;
+	typedef std::function<std::string(std::string* input, std::map<std::string, std::any>& fields, hookItem& hookItem, executor& executor)> executorFunction;
 
 	struct selector {
 		selectorFunction* func;
@@ -129,12 +129,12 @@ namespace LuaHook {
 
 	std::map<std::string, executorFunction> executorFunctions = {
 		{
-			"REPLACE_CONTENT_WITH_FILE", [](std::string* input, hookItem& hookItem, executor& executor) {
+			"REPLACE_CONTENT_WITH_FILE", [](std::string* input, std::map<std::string, std::any>& fields, hookItem& hookItem, executor& executor) {
 				return input->assign(LuaHook::ExecutorHelper::readFile(PathHelper::resolvePath(executor.j_executor.at("file"))));
 			}
 		},
 		{
-			"APPEND_FILE", [](std::string* input, hookItem& hookItem, executor& executor) {
+			"APPEND_FILE", [](std::string* input, std::map<std::string, std::any>& fields, hookItem& hookItem, executor& executor) {
 				return input->append("\n").append(LuaHook::ExecutorHelper::readFile(PathHelper::resolvePath(executor.j_executor.at("file"))));
 			}
 		}
@@ -297,7 +297,7 @@ namespace LuaHook {
 
 				for (executor& executor : hookItem.execute) {
 					try {
-						(*executor.func)(input, hookItem, executor);
+						(*executor.func)(input, fields, hookItem, executor);
 
 						hasDoneSomething = true;
 					}
