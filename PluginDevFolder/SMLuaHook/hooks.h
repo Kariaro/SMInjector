@@ -74,11 +74,11 @@ namespace LuaHook::Hooks {
 			{"name", &name}
 		};
 
-		for (LuaHook::hookItem& hookItem : LuaHook::HookConfig::getHookItems("luaL_loadbuffer")) {
-			for (LuaHook::selector& selector : hookItem.selector) {
-				bool selected = (*selector.func)(fields, hookItem, selector);
-				Console::log(selected ? Color::LightPurple : Color::Purple, selected ? "selected" : "not selected");
-			}
+		std::string input(buff, sz);
+
+		if (size_t executeCount = LuaHook::runLuaHook("luaL_loadbuffer", &input, fields)) {
+			Console::log(Color::Green, "Set contents to:\n%s", input.c_str());
+			return ((pluaL_loadbuffer)*hck_luaL_loadbuffer)(L, input.c_str(), input.size(), name);
 		}
 
 		return ((pluaL_loadbuffer)*hck_luaL_loadbuffer)(L, buff, sz, name);
