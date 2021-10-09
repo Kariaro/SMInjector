@@ -277,8 +277,8 @@ namespace LuaHook {
 
 
 
-	bool runLuaHook(std::string name, std::string* input, std::map<std::string, std::any>& fields) {
-		bool hasDoneSomething = false;
+	size_t runLuaHook(std::string name, std::string* input, std::map<std::string, std::any>& fields) {
+		size_t executeCount = 0;
 
 		for (hookItem& hookItem : HookConfig::getHookItems(name)) {
 			bool selected = true;
@@ -299,7 +299,7 @@ namespace LuaHook {
 					try {
 						(*executor.func)(input, fields, hookItem, executor);
 
-						hasDoneSomething = true;
+						executeCount++;
 					}
 					catch (std::exception& e) {
 						Console::log(Color::LightRed, "Failed executing executor %s: %s", executor.j_executor.dump(4).c_str(), e.what());
@@ -309,7 +309,7 @@ namespace LuaHook {
 			}
 		}
 
-		return hasDoneSomething;
+		return executeCount;
 	}
 
 }
