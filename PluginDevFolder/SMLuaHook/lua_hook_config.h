@@ -142,6 +142,16 @@ namespace LuaHook {
 			"APPEND_FILE", [](std::string* input, std::map<std::string, std::any>& fields, hookItem& hookItem, executor& executor) {
 				return input->append("\n").append(LuaHook::ExecutorHelper::readFile(PathHelper::resolvePath(executor.j_executor.at("file"))));
 			}
+		},
+		{
+			"PREPEND_STRING", [](std::string* input, std::map<std::string, std::any>& fields, hookItem& hookItem, executor& executor) {
+				return input->insert(0, executor.j_executor.at("string").get<std::string>().append("\n"));
+			}
+		},
+		{
+			"APPEND_STRING", [](std::string* input, std::map<std::string, std::any>& fields, hookItem& hookItem, executor& executor) {
+				return input->append("\n").append(executor.j_executor.at("string"));
+			}
 		}
 	};
 
