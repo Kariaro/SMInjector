@@ -26,6 +26,8 @@ LIB_RESULT PluginLoad() {
 const char* defaultConfig = R"(// Configuration file for hooking the Lua C API
 {
 	"hooks": {
+
+		// This function is used for setting up the Lua environment
 		"luaL_loadstring": [
 			/*
 			{
@@ -56,6 +58,8 @@ const char* defaultConfig = R"(// Configuration file for hooking the Lua C API
 			}
 			*/
 		],
+
+		// All files the game tries to load pass through here
 		"luaL_loadbuffer": [
 			/*
 			{
@@ -78,6 +82,7 @@ const char* defaultConfig = R"(// Configuration file for hooking the Lua C API
 			}
 			*/
 		]
+		
 	}
 }
 )";
