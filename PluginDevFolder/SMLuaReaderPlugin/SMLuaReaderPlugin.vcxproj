@@ -15,7 +15,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\hooks.h" />
-    <ClInclude Include="src\lua.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -69,6 +71,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -96,6 +99,7 @@ copy /B "$(LocalDebuggerCommand)" "$(OutputPath)plugins\$(TargetFileName)"</Comm
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -116,5 +120,12 @@ copy /B "$(LocalDebuggerCommand)" "$(OutputPath)plugins\$(TargetFileName)"</Comm
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\SMInjector\packages\luajit.native.2.0.5\build\native\luajit.native.targets" Condition="Exists('..\..\SMInjector\packages\luajit.native.2.0.5\build\native\luajit.native.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\SMInjector\packages\luajit.native.2.0.5\build\native\luajit.native.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\SMInjector\packages\luajit.native.2.0.5\build\native\luajit.native.targets'))" />
+  </Target>
 </Project>

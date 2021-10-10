@@ -1,10 +1,13 @@
 #pragma once
 #include <stdio.h>
 #include <gamehook.h>
+#include <path_helper.h>
 #include <lua.hpp>
 
 #include <console.h>
 using Console::Color;
+
+#include "lua_hook_config.h"
 
 
 // LUAL_REGISTER
@@ -25,14 +28,17 @@ GameHook* hck_luaL_loadbuffer;
 
 // =============
 
-namespace Hooks {
+namespace LuaHook::Hooks {
 	void hook_luaL_register(lua_State* L, const char* libname, const luaL_Reg* l) {
 		Console::log(Color::Aqua, "hook_luaL_register: libname=[%s]", libname);
 
 		const luaL_Reg* ptr = l;
 
-		for (int i = 0; ptr->name != NULL; i++, ptr++) {
-			Console::log(Color::Aqua, "hook_luaL_register: luaL_Reg[%d] name=[%s] func=[%p]", i, ptr->name, (void*)ptr->func);
+		int i = 0;
+		while (ptr->name != NULL) {
+			Console::log(Color::Aqua, "hook_luaL_register: luaL_Reg[%d] name=[%s] func=[%p]", i++, ptr->name, (void*)ptr->func);
+
+			ptr++;
 		}
 
 		return ((pluaL_register)*hck_luaL_register)(L, libname, l);
@@ -40,6 +46,18 @@ namespace Hooks {
 
 	int hook_luaL_loadstring(lua_State* L, const char* s) {
 		Console::log(Color::Aqua, "hook_luaL_loadstring: s=[ ... ]");
+
+		std::map<std::string, std::any> fields = {
+			{"s", &s}
+		};
+
+		std::string input(s);
+
+		if (LuaHook::runLuaHook("luaL_loadstring", &input, fields)) {
+			Console::log(Color::Green, "Set contents to:\n%s", input.c_str());
+			return ((pluaL_loadstring)*hck_luaL_loadstring)(L, input.c_str());
+		}
+
 		return ((pluaL_loadstring)*hck_luaL_loadstring)(L, s);
 	}
 
@@ -50,6 +68,19 @@ namespace Hooks {
 
 	int hook_luaL_loadbuffer(lua_State* L, const char* buff, size_t sz, const char* name) {
 		Console::log(Color::Aqua, "hck_luaL_loadbuffer: buff=[ ... ], sz=[%zu], name=[%s]", sz, name);
+
+		std::map<std::string, std::any> fields = {
+			{"buff", &buff},
+			{"name", &name}
+		};
+
+		std::string input(buff, sz);
+
+		if (size_t executeCount = LuaHook::runLuaHook("luaL_loadbuffer", &input, fields)) {
+			Console::log(Color::Green, "Set contents to:\n%s", input.c_str());
+			return ((pluaL_loadbuffer)*hck_luaL_loadbuffer)(L, input.c_str(), input.size(), name);
+		}
+
 		return ((pluaL_loadbuffer)*hck_luaL_loadbuffer)(L, buff, sz, name);
 	}
 }
