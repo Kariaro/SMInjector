@@ -27,29 +27,56 @@ const char* defaultConfig = R"(// Configuration file for hooking the Lua C API
 {
 	"hooks": {
 		"luaL_loadstring": [
+			/*
 			{
-				"selector": {
-					"operator": "contains",
-					"value": "unsafe_env"
-				},
-				"file": {
-					"option": "replace_content",
-					"name": "$PLUGIN_CONFIG/override/unsafe_env.lua"
-				}
+				// Replace the environment table (the functions accessible inside
+				// the lua sandbox) with an environment table loaded from a file
+				
+				// Hooks are ran from high to low priority
+				"priority": 1,
+				
+				// All selectors must result in true for commands to be ran
+				"selector": [
+					{
+						// The "name" field can be omitted if the hooked function has
+						// at most one string field (check the (Lua/Luajit) source code)
+
+						// "name": "s",
+						"operator": "CONTAINS",
+						"value": "unsafe_env"
+					}
+				],
+
+				"execute": [
+					{
+						"command": "REPLACE_CONTENT_WITH_FILE",
+						"file": "$PLUGIN_CONFIG/override/unsafe_env.lua"
+					}
+				]
 			}
+			*/
 		],
 		"luaL_loadbuffer": [
+			/*
 			{
-				"selector": {
-				    "field": "name",
-				    "operator": "equals",
-				    "value": "Survival/Scripts/game/SurvivalGame.lua"
-				},
-				"file": {
-					"option": "replace_content",
-					"name": "$PLUGIN_CONFIG/override/files/SurvivalGame.lua"
-				}
+				// Enable survival dev mode
+
+				"priority": 1,
+				"selector": [
+					{
+				    	"field": "name",
+				    	"operator": "EQUALS",
+				    	"value": "Survival/Scripts/game/SurvivalGame.lua"
+					}
+				],
+				"execute": [
+					{
+						"command": "PREPEND_STRING",
+						"string": "g_survivalDev = true"
+					}
+				]
 			}
+			*/
 		]
 	}
 }
